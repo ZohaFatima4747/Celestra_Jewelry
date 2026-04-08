@@ -1,0 +1,21 @@
+.settings-page { max-width: 600px; }
+.page-title { font-size: 1.5rem; color: #1a1a2e; font-weight: 700; margin-bottom: 24px; }
+.settings-card { background: #fff; border-radius: 12px; padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+.settings-card h3 { font-size: 1rem; color: #1a1a2e; font-weight: 700; margin: 0 0 20px; }
+.success-msg { background: #eafaf1; color: #27ae60; border: 1px solid #a9dfbf; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.88rem; }
+.error-msg { background: #fff0f0; color: #c0392b; border: 1px solid #f5c6cb; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.88rem; }
+.settings-form { display: flex; flex-direction: column; gap: 14px; }
+.settings-form label { display: flex; flex-direction: column; gap: 5px; font-size: 0.85rem; color: #555; font-weight: 600; }
+.settings-form input { padding: 10px 13px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; outline: none; width: 100%; }
+.settings-form input:focus { border-color: #c9a96e; }
+.settings-form button { background: #c9a96e; color: #fff; border: none; padding: 11px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 4px; width: 100%; }
+.settings-form button:hover:not(:disabled) { background: #b8935a; }
+.settings-form button:disabled { opacity: 0.6; cursor: not-allowed; }
+.role-info { color: #666; font-size: 0.88rem; line-height: 1.6; margin-bottom: 12px; }
+.role-info code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
+.role-badge { background: #1a1a2e; color: #c9a96e; display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+
+@media (max-width: 640px) {
+  .page-title { font-size: 1.2rem; }
+  .settings-card { padding: 20px; }
+}

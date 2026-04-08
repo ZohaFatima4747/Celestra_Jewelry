@@ -357,43 +357,25 @@
     height: 100vh;
     transform: translateX(-100%);
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
   }
-
-  .dark .ad-sidebar {
-    background: #0f0f1a;
-  }
-  .light .ad-sidebar {
-    background: #f8f4f0;
-  }
-
-  .ad-sidebar.open {
-    transform: translateX(0);
-  }
-
-  .ad-menu-btn {
-    display: block;
-  }
-
-  .ad-main {
-    padding: 20px 16px;
-  }
-
-  .ad-content {
-    padding: 16px;
-  }
-
-  .ad-page-title {
-    font-size: 20px;
-  }
+  .dark .ad-sidebar { background: #0f0f1a; }
+  .light .ad-sidebar { background: #f8f4f0; }
+  .ad-sidebar.open { transform: translateX(0); }
+  .ad-menu-btn { display: block; }
+  .ad-main { padding: 16px 12px; }
+  .ad-content { padding: 14px; }
+  .ad-page-title { font-size: 20px; }
+  .ad-topbar { margin-bottom: 16px; }
 }
 
 @media (max-width: 480px) {
-  .ad-user-name {
-    display: none;
-  }
-  .ad-topbar {
-    margin-bottom: 20px;
-  }
+  .ad-user-name { display: none; }
+  .ad-topbar { margin-bottom: 14px; }
+  .ad-main { padding: 12px 10px; }
+  .ad-content { padding: 12px; }
+  .ad-sb-item { min-height: 44px; }
+  .ad-page-title { font-size: 18px; }
 }
 
 /* ── KEEP OLD STYLES for UserCart / UserWishlist ─── */

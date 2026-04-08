@@ -1,70 +1,66 @@
 import React from "react";
 import "./BannerSlider.css";
 
-const BannerSlider = ({ onShopNow }) => {
-  return (
-    <div className="banner-wrap">
-      <div className="banner-hero">
-        <div className="blob blob-1" />
-        <div className="blob blob-2" />
+const TRUST = [
+  { icon: "✦", text: "Handcrafted Jewellery" },
+  { icon: "✦", text: "Premium Quality Metals" },
+  { icon: "✦", text: "Free Nationwide Delivery" },
+  { icon: "✦", text: "Easy Returns & Exchange" },
+];
 
-        <div className="banner-content">
-          <div className="banner-tag">⚡ New Arrivals 2025</div>
-          <h1 className="banner-title">
-            Next-Gen <span className="highlight">Electronics</span>
-            <br />
-            for Modern Life
-          </h1>
-          <p className="banner-subtitle">
-            Discover premium gadgets, wearables & smart home devices — all at
-            Grace.
-          </p>
-          <div className="banner-btns">
-            <button className="btn-primary" onClick={onShopNow}>
-              Shop Now →
-            </button>
-          </div>
-
-          <div className="banner-stats">
-            <div className="bstat">
-              <strong>20+</strong>
-              <span>Products</span>
-            </div>
-            <div className="bstat-divider" />
-            <div className="bstat">
-              <strong>6</strong>
-              <span>Categories</span>
-            </div>
-            <div className="bstat-divider" />
-            <div className="bstat">
-              <strong>Free</strong>
-              <span>Delivery</span>
-            </div>
-          </div>
+const BannerSlider = ({ onShopNow }) => (
+  <div className="banner-wrap">
+    <div className="banner-hero">
+      <div className="banner-content">
+        <div className="banner-tag">— New Collection &nbsp;·&nbsp; Celestra · Spring 2025</div>
+        <h1 className="banner-title">
+          Jewellery born<br />from the <em>night sky</em>
+        </h1>
+        <p className="banner-subtitle">
+          Handcrafted fine jewellery by Celestra, inspired by the cosmos.
+          Each piece carries the light of a thousand stars —
+          made to be worn, cherished, and passed down.
+        </p>
+        <div className="banner-btns">
+          <button className="btn-primary" onClick={onShopNow}>Explore Collection</button>
         </div>
-
-        <div className="banner-cards">
+        <div className="banner-stats">
           {[
-            { icon: "🎧", label: "Audio", color: "#22c55e" },
-            { icon: "⌚", label: "Wearables", color: "#3b82f6" },
-            { icon: "📷", label: "Camera", color: "#f59e0b" },
-            { icon: "🏠", label: "Smart Home", color: "#a855f7" },
-          ].map((item, i) => (
-            <div
-              className="banner-cat-card"
-              key={i}
-              style={{ animationDelay: `${i * 0.1}s` }}
-            >
-              <span className="bcc-icon" style={{ color: item.color }}>
-                {item.icon}
-              </span>
-              <span className="bcc-label">{item.label}</span>
+          { val: "30+",   lbl: "Pieces" },
+            { val: "6",    lbl: "Collections" },
+            { val: "Free", lbl: "Delivery" },
+            { val: "Easy", lbl: "Returns" },
+          ].map((s, i) => (
+            <div className="bstat" key={i}>
+              <strong>{s.val}</strong>
+              <span>{s.lbl}</span>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Luxury Wordmark */}
+      <div className="banner-wordmark">
+        <div className="wm-house">THE HOUSE OF</div>
+        <div className="wm-name">CELESTRA</div>
+        <div className="wm-divider">
+          <span className="wm-line" />
+          <span className="wm-star">✦</span>
+          <span className="wm-line" />
+        </div>
+        <div className="wm-sub">JEWELRY &amp; ATELIER</div>
+      </div>
     </div>
-  );
-};
+
+    <div className="banner-trust">
+      {TRUST.map((t, i) => (
+        <div className="trust-item" key={i}>
+          <span className="trust-icon">{t.icon}</span>
+          <span>{t.text}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 export default BannerSlider;

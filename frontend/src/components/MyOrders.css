@@ -501,18 +501,16 @@
   .mo-row {
     flex-wrap: wrap;
     gap: 10px;
+    padding: 12px 14px;
   }
-  .mo-row-left {
-    min-width: unset;
-  }
-  .mo-row-mid {
-    width: 100%;
-    order: 3;
-  }
-  .mo-detail-grid {
-    grid-template-columns: 1fr;
-  }
-  .mo-summary {
-    gap: 8px;
-  }
+  .mo-row-left { min-width: unset; width: 100%; }
+  .mo-row-mid { width: 100%; order: 3; }
+  .mo-row-right { width: 100%; justify-content: space-between; }
+  .mo-detail-grid { grid-template-columns: 1fr; }
+  .mo-summary { gap: 8px; }
+  .mo-stat { min-width: 70px; padding: 10px 8px; }
+  .mo-stat strong { font-size: 16px; }
+  .mo-filter-btn { min-height: 36px; padding: 6px 12px; }
+  .mo-cancel-btn { min-height: 44px; width: 100%; }
+  .mo-actions { justify-content: stretch; }
 }

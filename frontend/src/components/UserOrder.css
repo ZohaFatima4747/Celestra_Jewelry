@@ -120,14 +120,12 @@
 /* Responsive Card Layout for Mobile */
 @media (max-width: 768px) {
   .user-orders-container table,
-  .user-orders-container thead {
-    display: block;
-  }
+  .user-orders-container thead { display: block; }
 
   .user-orders-container tbody {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
   }
 
   .user-orders-container tr {
@@ -143,6 +141,7 @@
   .user-orders-container td {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 10px 0;
     border: none;
     font-size: 0.9rem;
@@ -153,19 +152,18 @@
     font-weight: 600;
     color: #555;
     margin-right: 10px;
+    flex-shrink: 0;
   }
 
-  .order-cancel-btn,
-  .receipt-btn {
+  .order-cancel-btn, .receipt-btn {
+    min-height: 44px;
     width: 48%;
     font-size: 0.85rem;
     margin-top: 10px;
   }
 
-  .status-badge {
-    font-size: 0.85rem;
-    padding: 5px 10px;
-  }
+  .filter-btn { min-height: 44px; }
+  .status-badge { font-size: 0.85rem; padding: 5px 10px; }
 }
 
 /* Loader */

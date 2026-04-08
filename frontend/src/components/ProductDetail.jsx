@@ -1,0 +1,298 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import Navbar from "./Navbar";
+import Footer from "./Footer";
+import CartModal from "./CartModal";
+import CheckoutModal from "./CheckoutModal";
+import ProductImage from "./ProductImage";
+import { useCart } from "../context/CartContext";
+import { getUserId } from "../utils/auth";
+import { PROD_URL, WISH_URL } from "../utils/api";
+import { resolveImage } from "../utils/assetMap";
+import "./ProductDetail.css";
+
+const ProductDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  // ── Global cart state ──────────────────────────────────────
+  const { cartItems, cartCount, fetchCart, addToCart, removeItem, deleteItem, increaseQty, setCartItems } = useCart();
+  const [cartOpen, setCartOpen] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+
+  // ── Local page state ───────────────────────────────────────
+  const [product, setProduct]           = useState(null);
+  const [loading, setLoading]           = useState(true);
+  const [related, setRelated]           = useState([]);
+  const [activeImg, setActiveImg]       = useState(0);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [qty, setQty]                   = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [cartMsg, setCartMsg]           = useState("");
+
+  // Fetch product + related
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    setActiveImg(0);
+    setQty(1);
+    setSelectedSize(null);
+    setSelectedColor(null);
+    // Fetch the specific product by ID, then fetch related in the same category
+    fetch(`${PROD_URL}/${id}`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Not found");
+        return r.json();
+      })
+      .then((found) => {
+        setProduct(found);
+        setLoading(false);
+        // Fetch related products in the same category
+        if (found.category) {
+          fetch(`${PROD_URL}?category=${encodeURIComponent(found.category)}&limit=5`)
+            .then((r) => r.json())
+            .then((data) => setRelated(data.filter((p) => p._id !== id).slice(0, 4)))
+            .catch(() => {});
+        }
+      })
+      .catch(() => {
+        setProduct(null);
+        setLoading(false);
+      });
+  }, [id]);
+
+  // Fetch wishlist status
+  useEffect(() => {
+    const userId = getUserId();
+    if (!userId || !product) return;
+    fetch(`${WISH_URL}/${userId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setIsWishlisted(data.wishlist.some((p) => p.productId._id === product._id));
+      });
+  }, [product]);
+
+  // Sync cart on mount
+  useEffect(() => { fetchCart(); }, [fetchCart]);
+
+  const handleAddToCart = () => {
+    if (product.sizes?.length > 0 && !selectedSize) {
+      setCartMsg("Please select a size first");
+      return;
+    }
+    if (product.colors?.length > 0 && !selectedColor) {
+      setCartMsg("Please select a color first");
+      return;
+    }
+    addToCart(product._id, product, qty, selectedSize, selectedColor);
+    setCartMsg("Added to cart!");
+    setTimeout(() => setCartMsg(""), 2500);
+  };
+
+  const handleOrderSuccess = (message) => {
+    setCartItems([]);
+    localStorage.removeItem("guestCart");
+    setShowPayment(false);
+    setCartOpen(false);
+    alert(message);
+  };
+
+  const toggleWishlist = () => {
+    const userId = getUserId();
+    if (!userId) { alert("Login first"); return; }
+    fetch(`${WISH_URL}/toggle`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, productId: product._id }),
+    })
+      .then((r) => r.json())
+      .then((data) => { if (data.success) setIsWishlisted((p) => !p); });
+  };
+
+  // ── Loading / not found ────────────────────────────────────
+  if (loading) return <div className="pd-loading"><div className="pd-spinner" /></div>;
+  if (!product) return (
+    <div className="pd-not-found">
+      <p>Product not found.</p>
+      <button onClick={() => navigate("/")}>← Back to Shop</button>
+    </div>
+  );
+
+  // Keep raw filenames — ProductImage handles resolution + srcSet
+  const gallery = product.images?.length ? product.images : [];
+  const isOutOfStock = product.stock === 0;
+
+  return (
+    <>
+      <Navbar
+        cartCount={cartCount}
+        onCartOpen={() => setCartOpen(true)}
+        searchQuery=""
+        onSearchChange={() => {}}
+        onCategorySelect={() => navigate("/")}
+      />
+
+      <div className="pd-wrap">
+        {/* Breadcrumb */}
+        <nav className="pd-breadcrumb">
+          <button className="pd-back-btn" onClick={() => navigate(-1)}>← Back</button>
+          <span onClick={() => navigate("/")}>Home</span>
+          <span className="pd-bc-sep">›</span>
+          <span onClick={() => navigate("/")}>
+            {product.category ? product.category.charAt(0).toUpperCase() + product.category.slice(1) : "Shop"}
+          </span>
+          <span className="pd-bc-sep">›</span>
+          <span className="pd-bc-current">{product.name}</span>
+        </nav>
+
+        {/* Main grid */}
+        <div className="pd-grid">
+
+          {/* Gallery */}
+          <div className="pd-gallery">
+            <div className="pd-thumbs">
+              {gallery.map((filename, i) => (
+                <div key={i} className={`pd-thumb ${activeImg === i ? "active" : ""}`} onClick={() => setActiveImg(i)}>
+                  <ProductImage filename={filename} alt={`${product.name} view ${i + 1}`} />
+                </div>
+              ))}
+            </div>
+            <div className="pd-main-img">
+              {/* First image is LCP candidate — load eagerly */}
+              <ProductImage filename={gallery[activeImg]} alt={product.name} eager={activeImg === 0} />
+              {isOutOfStock && <div className="pd-sold-out-badge">Sold Out</div>}
+            </div>
+          </div>
+
+          {/* Info */}
+          <div className="pd-info">
+            <span className="pd-category">{product.category}</span>
+            <h1 className="pd-name">{product.name}</h1>
+
+            {product.rating > 0 && (
+              <div className="pd-rating">
+                <span className="pd-stars">{"★".repeat(Math.round(product.rating))}{"☆".repeat(5 - Math.round(product.rating))}</span>
+                <span className="pd-rating-num">{product.rating.toFixed(1)}</span>
+                {product.numReviews > 0 && <span className="pd-reviews">({product.numReviews} reviews)</span>}
+              </div>
+            )}
+
+            <div className="pd-price-row">
+              <span className="pd-price">Rs {product.price?.toLocaleString()}</span>
+              <span className={`pd-stock-tag ${isOutOfStock ? "out" : "in"}`}>
+                {isOutOfStock ? "Out of Stock" : `In Stock (${product.stock})`}
+              </span>
+            </div>
+
+            <div className="pd-divider" />
+
+            <p className="pd-desc">{product.description || "A beautifully crafted piece, made with the finest materials."}</p>
+
+            {/* Color */}
+            {product.colors?.length > 0 && (
+              <div className="pd-option-group">
+                <div className="pd-option-label">Color: <span>{selectedColor || "Select"}</span></div>
+                <div className="pd-colors">
+                  {product.colors.map((c) => (
+                    <button key={c} className={`pd-size-btn ${selectedColor === c ? "active" : ""}`}
+                      onClick={() => setSelectedColor(c)}>{c}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Size */}
+            {product.sizes?.length > 0 && (
+              <div className="pd-option-group">
+                <div className="pd-option-label">Size: <span>{selectedSize || "Select"}</span></div>
+                <div className="pd-sizes">
+                  {product.sizes.map((s) => (
+                    <button key={s} className={`pd-size-btn ${selectedSize === s ? "active" : ""}`} onClick={() => setSelectedSize(s)}>{s}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Qty */}
+            <div className="pd-option-group">
+              <div className="pd-option-label">Quantity:</div>
+              <div className="pd-qty">
+                <button onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
+                <span>{qty}</span>
+                <button onClick={() => setQty((q) => q + 1)}>+</button>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="pd-cta">
+              <button className="pd-add-btn" onClick={handleAddToCart} disabled={isOutOfStock}>
+                {isOutOfStock ? "Sold Out" : "Add to Cart"}
+              </button>
+              <button className={`pd-wish-btn ${isWishlisted ? "active" : ""}`} onClick={toggleWishlist}
+                title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}>
+                {isWishlisted ? "❤️" : "🤍"}
+              </button>
+            </div>
+
+            {cartMsg && (
+              <div className={`pd-cart-msg ${cartMsg.startsWith("Please") ? "pd-cart-msg--error" : ""}`}>
+                {cartMsg}
+              </div>
+            )}
+
+            <div className="pd-trust">
+              <div className="pd-trust-item"><span>✦</span> Free gift wrapping</div>
+              <div className="pd-trust-item"><span>✦</span> Free nationwide delivery</div>
+              <div className="pd-trust-item"><span>✦</span> Easy 30-day returns</div>
+              <div className="pd-trust-item"><span>✦</span> Premium quality metals</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Related */}
+        {related.length > 0 && (
+          <div className="pd-related">
+            <h2 className="pd-related-title">You may also <em>like</em></h2>
+            <div className="pd-related-grid">
+              {related.map((p) => (
+                <div key={p._id} className="pd-rel-card" onClick={() => { navigate(`/product/${p._id}`); window.scrollTo(0, 0); }}>
+                  <div className="pd-rel-img"><ProductImage filename={p.images?.[0]} alt={p.name} /></div>
+                  <div className="pd-rel-info">
+                    <span className="pd-rel-cat">{p.category}</span>
+                    <div className="pd-rel-name">{p.name}</div>
+                    <div className="pd-rel-price">Rs {p.price?.toLocaleString()}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Footer />
+
+      {/* Cart sidebar */}
+      {cartOpen && (
+        <CartModal
+          cartItems={cartItems}
+          onClose={() => setCartOpen(false)}
+          onCheckout={() => { setCartOpen(false); setShowPayment(true); }}
+          removeItem={removeItem}
+          deleteItem={deleteItem}
+          increaseQty={increaseQty}
+        />
+      )}
+
+      {showPayment && (
+        <CheckoutModal
+          cartItems={cartItems}
+          totalAmount={cartItems.reduce((sum, item) => sum + item.product.price * item.qty, 0)}
+          onSuccess={handleOrderSuccess}
+          onClose={() => setShowPayment(false)}
+        />
+      )}
+    </>
+  );
+};
+
+export default ProductDetail;

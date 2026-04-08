@@ -847,44 +847,38 @@
     transform: translateX(-100%);
     background: #0f0f1a;
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
+    overflow-y: auto;
   }
-  .od-sidebar.open {
-    transform: translateX(0);
-  }
-  .od-menu-btn {
-    display: block;
-  }
-  .od-main {
-    padding: 20px 16px;
-  }
-  .od-content {
-    padding: 16px;
-  }
-  .od-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .od-detail-grid {
-    grid-template-columns: 1fr;
-  }
-  .od-order-customer {
-    display: none;
-  }
+  .od-sidebar.open { transform: translateX(0); }
+  .od-menu-btn { display: block; }
+  .od-main { padding: 16px 12px; }
+  .od-content { padding: 14px; }
+  .od-cards { grid-template-columns: repeat(2, 1fr); }
+  .od-detail-grid { grid-template-columns: 1fr; }
+  .od-order-customer { display: none; }
+  .od-order-row { flex-wrap: wrap; gap: 10px; }
+  .od-order-left { min-width: unset; width: 100%; }
+  .od-order-right { width: 100%; justify-content: space-between; }
+  .od-page-title { font-size: 20px; }
+  .od-topbar { margin-bottom: 16px; }
 }
 
 @media (max-width: 480px) {
-  .od-cards {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .od-breakdown {
-    grid-template-columns: 1fr;
-  }
-  .od-user-name {
-    display: none;
-  }
-  .od-page-title {
-    font-size: 20px;
-  }
+  .od-cards { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .od-card-val { font-size: 20px; }
+  .od-breakdown { grid-template-columns: 1fr; }
+  .od-user-name { display: none; }
+  .od-page-title { font-size: 18px; }
+  .od-sb-item { min-height: 44px; }
+  .od-status-btn { min-height: 36px; }
+  .od-chart { gap: 6px; }
+  .od-main { padding: 12px 10px; }
+  .od-content { padding: 12px; }
+  .od-bar-val { font-size: 8px; }
+}
+
+@media (max-width: 360px) {
+  .od-cards { grid-template-columns: 1fr; }
 }
 
 /* ── PROFILE CHIP CLICKABLE ───────────────────── */

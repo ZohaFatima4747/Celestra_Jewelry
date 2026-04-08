@@ -1,307 +1,209 @@
-@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap");
-
 .banner-wrap {
   width: 100%;
-  background: #070d1a;
-  padding: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 
+/* ── HERO ── */
 .banner-hero {
-  max-width: 1400px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 60px 40px 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 40px;
-  position: relative;
-  overflow: hidden;
-  min-height: 340px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 440px;
+  border-bottom: 1px solid var(--border);
 }
 
-/* Background blobs */
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.18;
-  pointer-events: none;
-}
-
-.blob-1 {
-  width: 400px;
-  height: 400px;
-  background: #22c55e;
-  top: -100px;
-  left: -100px;
-}
-
-.blob-2 {
-  width: 300px;
-  height: 300px;
-  background: #3b82f6;
-  bottom: -80px;
-  right: 200px;
-}
-
-/* Content */
+/* Left */
 .banner-content {
-  flex: 1;
-  max-width: 560px;
-  position: relative;
-  z-index: 2;
+  padding: 56px 48px 56px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid var(--border);
 }
 
 .banner-tag {
-  display: inline-block;
-  font-family: "DM Sans", sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.25);
-  padding: 5px 14px;
-  border-radius: 20px;
-  letter-spacing: 0.5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
   margin-bottom: 18px;
 }
 
 .banner-title {
-  font-family: "Syne", sans-serif;
-  font-size: clamp(28px, 4vw, 46px);
-  font-weight: 800;
-  color: #ffffff;
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(34px, 4vw, 54px);
+  font-weight: 600;
+  color: var(--dark);
   line-height: 1.1;
-  letter-spacing: -1px;
-  margin: 0 0 16px;
+  margin: 0 0 20px;
 }
-
-.banner-title .highlight {
-  background: linear-gradient(135deg, #22c55e, #4ade80);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+.banner-title em { font-style: italic; color: var(--gold); }
 
 .banner-subtitle {
-  font-family: "DM Sans", sans-serif;
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.5);
-  line-height: 1.6;
-  margin-bottom: 28px;
-  max-width: 420px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.75;
+  margin-bottom: 32px;
+  max-width: 380px;
 }
 
-.banner-btns {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 36px;
-}
+.banner-btns { display: flex; gap: 12px; margin-bottom: 40px; }
 
 .btn-primary {
-  padding: 13px 28px;
-  background: #22c55e;
-  color: #000;
+  padding: 12px 28px;
+  background: var(--dark);
+  color: #fff;
   border: none;
-  border-radius: 12px;
-  font-family: "DM Sans", sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s ease;
-  letter-spacing: 0.3px;
-}
-
-.btn-primary:hover {
-  background: #16a34a;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
-}
-
-.btn-ghost {
-  padding: 13px 24px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  font-family: "DM Sans", sans-serif;
-  font-size: 14px;
+  border-radius: 4px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: 0.2s ease;
+  letter-spacing: 0.5px;
+  transition: background 0.2s;
 }
+.btn-primary:hover { background: #2d1f50; }
 
-.btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-}
-
-/* Stats */
-.banner-stats {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.bstat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.bstat strong {
-  font-family: "Syne", sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.bstat span {
-  font-family: "DM Sans", sans-serif;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.bstat-divider {
-  width: 1px;
-  height: 30px;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* Right cards */
-.banner-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 2;
-}
-
-.banner-cat-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 20px 18px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: 0.2s ease;
-  animation: fadeUp 0.5s ease both;
-  min-width: 100px;
-}
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.banner-cat-card:hover {
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateY(-3px);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.bcc-icon {
-  font-size: 28px;
-}
-
-.bcc-label {
-  font-family: "DM Sans", sans-serif;
+.btn-ghost {
+  padding: 12px 24px;
+  background: transparent;
+  color: var(--dark);
+  border: 1px solid var(--border);
+  border-radius: 4px;
   font-size: 12px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  text-align: center;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+.banner-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+.bstat { display: flex; flex-direction: column; gap: 2px; }
+.bstat strong { font-family: "Cormorant Garamond", serif; font-size: 20px; font-weight: 600; color: var(--dark); }
+.bstat span { font-size: 10px; font-weight: 400; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+/* Right: Luxury Wordmark */
+.banner-wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #0b0d18;
+  padding: 48px 40px;
+  gap: 0;
+  user-select: none;
 }
 
-/* Admin btn */
-.banner-admin-btn {
+.wm-house {
+  font-family: 'Cinzel', 'Cormorant Garamond', serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 6px;
+  color: #8a7a52;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.wm-name {
+  font-family: 'Cinzel', 'Cormorant Garamond', serif;
+  font-size: clamp(36px, 5vw, 72px);
+  font-weight: 600;
+  letter-spacing: 14px;
+  color: #e8e2d4;
+  line-height: 1;
+  margin-bottom: 22px;
+  text-indent: 14px; /* compensate letter-spacing on last char */
+}
+
+.wm-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 340px;
+  margin-bottom: 22px;
+}
+
+.wm-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #b8952a, transparent);
+  opacity: 0.6;
+}
+
+.wm-star {
+  font-size: 16px;
+  color: #b8952a;
+  line-height: 1;
+  position: relative;
+}
+/* dot inside star via pseudo */
+.wm-star::after {
+  content: '·';
   position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -54%);
+  font-size: 8px;
+  color: #b8952a;
+}
+
+.wm-sub {
+  font-family: 'Cinzel', 'Cormorant Garamond', serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 7px;
+  color: #8a7a52;
+  text-transform: uppercase;
+  text-indent: 7px;
+}
+
+/* hide old pieces */
+.blob, .bcc-icon, .banner-cards, .banner-cat-card, .banner-logo-side { display: none; }
+
+/* ── TRUST BAR ── */
+.banner-trust {
+  max-width: 1320px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 16px;
-  transition: 0.2s ease;
-  z-index: 5;
+  gap: 40px;
+  padding: 16px 40px;
+  flex-wrap: wrap;
 }
-
-.banner-admin-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.3px;
 }
+.trust-icon { color: var(--gold); font-size: 10px; }
 
 /* Responsive */
 @media (max-width: 900px) {
-  .banner-hero {
-    flex-direction: column;
-    padding: 40px 24px;
-    text-align: center;
-    min-height: auto;
-  }
-
-  .banner-content {
-    max-width: 100%;
-  }
-
-  .banner-subtitle {
-    margin: 0 auto 24px;
-  }
-
-  .banner-btns {
-    justify-content: center;
-  }
-
-  .banner-stats {
-    justify-content: center;
-  }
-
-  .banner-cards {
-    grid-template-columns: repeat(4, 1fr);
-    width: 100%;
-  }
-
-  .blob-1,
-  .blob-2 {
-    display: none;
-  }
+  .banner-hero { grid-template-columns: 1fr; min-height: auto; }
+  .banner-content { padding: 40px 24px; border-right: none; border-bottom: 1px solid var(--border); }
+  .banner-wordmark { padding: 40px 24px; min-height: 220px; }
+  .wm-name { font-size: clamp(32px, 8vw, 56px); letter-spacing: 10px; }
 }
-
-@media (max-width: 480px) {
-  .banner-hero {
-    padding: 32px 16px;
-  }
-
-  .banner-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .banner-btns {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .btn-primary,
-  .btn-ghost {
-    width: 100%;
-    max-width: 260px;
-  }
+@media (max-width: 600px) {
+  .banner-content { padding: 32px 16px; }
+  .banner-btns { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .btn-primary, .btn-ghost { width: 100%; max-width: 100%; text-align: center; }
+  .banner-wordmark { padding: 32px 16px; min-height: 180px; }
+  .wm-name { font-size: clamp(24px, 10vw, 44px); letter-spacing: 6px; text-indent: 6px; }
+  .wm-divider { max-width: 220px; }
+  .banner-trust { gap: 16px; padding: 14px 16px; }
+  .trust-item { font-size: 10px; }
+  .banner-stats { gap: 20px; }
+}
+@media (max-width: 380px) {
+  .wm-name { font-size: clamp(20px, 11vw, 36px); letter-spacing: 4px; text-indent: 4px; }
 }

@@ -1,102 +1,82 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { WISH_URL } from "../utils/api";
+import ProductImage from "./ProductImage";
 import "./QuickViewModal.css";
 
 const QuickViewModal = ({ product, onClose, addToCart, userId }) => {
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
     if (!product || !userId) return;
-
-    fetch(`http://localhost:1000/api/wishlist/${userId}`)
-      .then((res) => res.json())
+    fetch(`${WISH_URL}/${userId}`)
+      .then((r) => r.json())
       .then((data) => {
-        if (data.success) {
-          const exists = data.wishlist.some(
-            (p) => p.productId._id === product._id,
-          );
-          setIsWishlisted(exists);
-        }
+        if (data.success)
+          setIsWishlisted(data.wishlist.some((p) => p.productId._id === product._id));
       });
   }, [product, userId]);
 
   const toggleWishlist = () => {
-    if (!userId) {
-      alert("Login first");
-      return;
-    }
-
-    fetch("http://localhost:1000/api/wishlist/toggle", {
+    if (!userId) { alert("Login first"); return; }
+    fetch(`${WISH_URL}/toggle`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId,
-        productId: product._id,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, productId: product._id }),
     })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setIsWishlisted(!isWishlisted);
-        }
-      });
-  };
-
-  const handleMouseMove = (e) => {
-    const { left, top, width, height } =
-      e.currentTarget.getBoundingClientRect();
-
-    const x = ((e.clientX - left) / width - 0.5) * 20;
-    const y = ((e.clientY - top) / height - 0.5) * -20;
-
-    setRotation({ x, y });
-  };
-
-  const handleMouseLeave = () => {
-    setRotation({ x: 0, y: 0 });
+      .then((r) => r.json())
+      .then((data) => { if (data.success) setIsWishlisted((p) => !p); });
   };
 
   if (!product) return null;
 
+  const isOutOfStock = product.stock === 0;
+
   return (
-    <div className="quickview-overlay" onClick={onClose}>
-      <div className="quickview-content" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose}>
-          ✕
-        </button>
+    <div className="qv-overlay" onClick={onClose}>
+      <div className="qv-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="qv-close" onClick={onClose}>✕</button>
 
-        <div
-          className="quickview-img-container"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-        >
-          <img
-            src={product.image}
-            alt={product.name}
-            className="quickview-img"
-            style={{
-              transform: `rotateY(${rotation.x}deg) rotateX(${rotation.y}deg)`,
-            }}
-          />
+        <div className="qv-img-wrap">
+          <ProductImage filename={product.images?.[0]} alt={product.name} eager />
+          <button
+            className={`qv-wish ${isWishlisted ? "active" : ""}`}
+            onClick={toggleWishlist}
+            title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
+          >
+            {isWishlisted ? "❤️" : "🤍"}
+          </button>
         </div>
 
-        {/* ❤️ WISHLIST BUTTON */}
-        {/* ❤️ WISHLIST BUTTON */}
-        <div className="wishlist-btn-wrap" onClick={toggleWishlist}>
-          <span className="wishlist-icon">{isWishlisted ? "❤️" : "🤍"}</span>
-          <span className="wishlist-tooltip">
-            {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-          </span>
+        <div className="qv-info">
+          <span className="qv-category">{product.category}</span>
+          <h2 className="qv-name">{product.name}</h2>
+
+          {product.rating > 0 && (
+            <div className="qv-stars">
+              {"★".repeat(Math.round(product.rating))}{"☆".repeat(5 - Math.round(product.rating))}
+              <span className="qv-rating-num">{product.rating.toFixed(1)}</span>
+            </div>
+          )}
+
+          <p className="qv-desc">{product.description}</p>
+
+          <div className="qv-meta">
+            <span className={`qv-stock ${isOutOfStock ? "out" : "in"}`}>
+              {isOutOfStock ? "Out of Stock" : "In Stock"}
+            </span>
+          </div>
+
+          <div className="qv-footer">
+            <span className="qv-price">Rs {product.price?.toLocaleString()}</span>
+            <button
+              className="qv-add-btn"
+              onClick={() => { addToCart(product._id); onClose(); }}
+              disabled={isOutOfStock}
+            >
+              {isOutOfStock ? "Sold Out" : "Add to Cart"}
+            </button>
+          </div>
         </div>
-
-        <h2>{product.name}</h2>
-        <p>{product.description}</p>
-        <p>Stock: IN STOCK</p>
-        <p>Price: Rs {product.price}</p>
-
-        <button onClick={() => addToCart(product._id)}>Add to Cart</button>
       </div>
     </div>
   );

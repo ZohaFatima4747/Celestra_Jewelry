@@ -8,7 +8,9 @@ const CartSchema = new mongoose.Schema({
         type: Object, 
         required: true
       },
-      qty: { type: Number, default: 1 }
+      qty: { type: Number, default: 1 },
+      selectedSize: { type: String, default: null },
+      selectedColor: { type: String, default: null },
     }
   ],
   total: { type: Number, default: 0 },

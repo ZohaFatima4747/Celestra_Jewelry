@@ -1,149 +1,123 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./Navbar.css";
 import { useNavigate } from "react-router-dom";
+import ContactForm from "./ContactForm";
+import CelestraLogo from "./CelestraLogo";
+import ProductImage from "./ProductImage";
+import { PROD_URL } from "../utils/api";
+import { useCart } from "../context/CartContext";
 
 const Navbar = ({ cartCount, onCartOpen, searchQuery, onSearchChange }) => {
   const navigate = useNavigate();
+  const { setCartItems } = useCart();
   const [suggestions, setSuggestions] = useState([]);
   const [showDrop, setShowDrop] = useState(false);
   const [allProducts, setAllProducts] = useState([]);
+  const [showContactForm, setShowContactForm] = useState(false);
   const searchRef = useRef(null);
 
-  // Fetch all products once
   useEffect(() => {
-    fetch("http://localhost:1000/api/products")
+    fetch(PROD_URL)
       .then((r) => r.json())
       .then((data) => setAllProducts(data))
       .catch(() => {});
   }, []);
 
-  // Filter suggestions on query change
   useEffect(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) {
-      setSuggestions([]);
-      setShowDrop(false);
-      return;
-    }
-
+    if (!q) { setSuggestions([]); setShowDrop(false); return; }
     const filtered = allProducts
-      .filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.category?.toLowerCase().includes(q),
-      )
+      .filter((p) => p.name.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q))
       .slice(0, 6);
-
     setSuggestions(filtered);
     setShowDrop(filtered.length > 0);
   }, [searchQuery, allProducts]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClick = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setShowDrop(false);
-      }
+      if (searchRef.current && !searchRef.current.contains(e.target)) setShowDrop(false);
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const handleSelect = (product) => {
-    onSearchChange(product.name);
-    setShowDrop(false);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "/";
-  };
+  const handleSelect = (product) => { onSearchChange(product.name); setShowDrop(false); };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-inner">
-        {/* Logo */}
-        <div className="navbar-logo" onClick={() => navigate("/shop")}>
-          <span className="logo-icon">⚡</span>
-          <span className="logo-text">Grace</span>
-          <span className="logo-sub">Electronics</span>
+    <>
+      {/* Topbar */}
+      <div className="navbar-announce">
+        <span className="navbar-announce-center">Complimentary gift wrapping on all orders &nbsp;·&nbsp; Free nationwide delivery &nbsp;·&nbsp; Celestra Jewelry</span>
+        <div className="navbar-announce-right">
+          <a href="#">Track Order</a>
+          <a href="#">Contact</a>
+          <a href="#">Visit Store</a>
         </div>
+      </div>
 
-        {/* Search Bar */}
-        <div className="navbar-search" ref={searchRef}>
-          <span className="search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            onFocus={() => suggestions.length > 0 && setShowDrop(true)}
-          />
+      <nav className="navbar">
+        <div className="navbar-inner">
 
-          {/* Suggestions Dropdown */}
-          {showDrop && (
-            <div className="search-dropdown">
-              {suggestions.map((product) => (
-                <div
-                  key={product._id}
-                  className="search-item"
-                  onMouseDown={() => handleSelect(product)}
-                >
-                  <div className="search-item-img">
-                    <img src={product.image} alt={product.name} />
-                  </div>
-                  <div className="search-item-info">
-                    <span className="search-item-name">{product.name}</span>
-                    <span className="search-item-meta">
-                      <span className="search-item-cat">
-                        {product.category}
-                      </span>
-                      <span className="search-item-price">
-                        Rs {product.price?.toLocaleString()}
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              ))}
+          {/* Center logo */}
+          <div className="navbar-logo">
+            <CelestraLogo size="navbar" onClick={() => navigate("/")} />
+          </div>
 
-              {/* Clear button */}
-              {searchQuery && (
-                <div
-                  className="search-clear"
-                  onMouseDown={() => {
-                    onSearchChange("");
-                    setShowDrop(false);
-                  }}
-                >
-                  ✕ Clear search
+          {/* Right: search + profile + cart */}
+          <div className="navbar-actions">
+            <div className="navbar-search" ref={searchRef}>
+              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="Search jewelry..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                onFocus={() => suggestions.length > 0 && setShowDrop(true)}
+              />
+              {showDrop && (
+                <div className="search-dropdown">
+                  {suggestions.map((product) => (
+                    <div key={product._id} className="search-item" onMouseDown={() => handleSelect(product)}>
+                      <div className="search-item-img">
+                        <ProductImage filename={product.images?.[0]} alt={product.name} />
+                      </div>
+                      <div className="search-item-info">
+                        <span className="search-item-name">{product.name}</span>
+                        <span className="search-item-meta">
+                          <span className="search-item-cat">{product.category}</span>
+                          <span className="search-item-price">Rs {product.price?.toLocaleString()}</span>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {searchQuery && (
+                    <div className="search-clear" onMouseDown={() => { onSearchChange(""); setShowDrop(false); }}>✕ Clear</div>
+                  )}
                 </div>
               )}
             </div>
-          )}
+
+            <button className="nav-icon-btn" onClick={() => setShowContactForm(true)} title="Account">
+              <i className="fa-solid fa-user"></i>
+            </button>
+
+            <button className="nav-cart-btn" onClick={onCartOpen}>
+              <span className="cart-icon">🛒</span>
+              <span className="cart-label">Cart ({cartCount})</span>
+              {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+            </button>
+          </div>
         </div>
+      </nav>
 
-        {/* Right Actions */}
-        <div className="navbar-actions">
-          <button
-            className="nav-icon-btn"
-            onClick={() => navigate("/admin")}
-            title="Dashboard"
-          >
-            <i className="fa-solid fa-user"></i>
-          </button>
-
-          <button className="nav-cart-btn" onClick={onCartOpen}>
-            <span className="cart-icon">🛒</span>
-            <span className="cart-label">Cart</span>
-            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
-          </button>
-
-          <button className="nav-logout-btn" onClick={handleLogout}>
-            Logout
-          </button>
+      {showContactForm && (
+        <div className="cf-overlay" onClick={() => setShowContactForm(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <ContactForm onClose={() => setShowContactForm(false)} setCartItems={setCartItems} />
+          </div>
         </div>
-      </div>
-    </nav>
+      )}
+    </>
   );
 };
 

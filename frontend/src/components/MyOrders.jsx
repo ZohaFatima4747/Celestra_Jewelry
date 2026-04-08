@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { ORDER_URL } from "../utils/api";
+import { getUserId, getUserEmail } from "../utils/auth";
 import "./MyOrders.css";
 
 const STATUS_CONFIG = {
@@ -46,23 +48,17 @@ const MyOrders = ({ isDark }) => {
   const [cancelling, setCancelling] = useState(null);
   const [filter, setFilter] = useState("all");
 
-  const getUserId = () => {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-    try {
-      return JSON.parse(atob(token.split(".")[1])).id;
-    } catch {
-      return null;
-    }
-  };
-
   useEffect(() => {
     const userId = getUserId();
     if (!userId) {
       setLoading(false);
       return;
     }
-    fetch(`http://localhost:1000/api/orders/user/${userId}`)
+    const email = getUserEmail();
+    const url = email
+      ? `${ORDER_URL}/user/${userId}?email=${encodeURIComponent(email)}`
+      : `${ORDER_URL}/user/${userId}`;
+    fetch(url)
       .then((r) => r.json())
       .then((data) => {
         setOrders(data);
@@ -76,7 +72,7 @@ const MyOrders = ({ isDark }) => {
     setCancelling(orderId);
     try {
       const res = await fetch(
-        `http://localhost:1000/api/orders/${orderId}/status`,
+        `${ORDER_URL}/${orderId}/status`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -305,11 +301,7 @@ const MyOrders = ({ isDark }) => {
                         </div>
                         <div className="mo-info">
                           <span>💳</span>
-                          <span>
-                            {order.stripePayment?.paymentIntentId === "COD"
-                              ? "Cash on Delivery"
-                              : "Card (Stripe)"}
-                          </span>
+                          <span>Cash on Delivery</span>
                         </div>
                       </div>
                     </div>

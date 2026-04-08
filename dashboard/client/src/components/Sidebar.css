@@ -1,0 +1,98 @@
+.sidebar {
+  width: 230px;
+  min-height: 100vh;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 200;
+  transition: transform 0.25s ease;
+}
+.sidebar-brand {
+  padding: 24px 20px 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #c9a96e;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #2d2d4e;
+}
+.brand-icon { font-size: 1.5rem; flex-shrink: 0; }
+.sidebar-close-btn {
+  display: none;
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+}
+.sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+.nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  color: #b0b0c8;
+  text-decoration: none;
+  font-size: 0.92rem;
+  transition: background 0.2s, color 0.2s;
+  border-left: 3px solid transparent;
+}
+.nav-link:hover { background: #2d2d4e; color: #fff; }
+.nav-link.active { background: #2d2d4e; color: #c9a96e; border-left-color: #c9a96e; }
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #2d2d4e;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.admin-name { font-size: 0.8rem; color: #888; word-break: break-all; }
+.logout-btn {
+  background: #c9a96e;
+  color: #1a1a2e;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.logout-btn:hover { background: #b8935a; }
+.notif-badge {
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Mobile */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 199;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 260px;
+  }
+  .sidebar--open {
+    transform: translateX(0);
+  }
+  .sidebar-backdrop { display: block; }
+  .sidebar-close-btn { display: block; }
+}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { AUTH_URL } from "../utils/api";
 
 const AdminSettings = ({ theme: propTheme, onThemeChange }) => {
   const [userData, setUserData] = useState({ name: "", email: "" });
@@ -33,7 +34,7 @@ const AdminSettings = ({ theme: propTheme, onThemeChange }) => {
       }
       try {
         const res = await fetch(
-          `http://localhost:1000/api/v1/auth/user/${userId}`,
+          `${AUTH_URL}/user/${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           },
@@ -58,7 +59,7 @@ const AdminSettings = ({ theme: propTheme, onThemeChange }) => {
       const updateData = { name: userData.name, email: userData.email };
       if (password) updateData.password = password;
       const res = await fetch(
-        `http://localhost:1000/api/v1/auth/user/${userId}`,
+        `${AUTH_URL}/user/${userId}`,
         {
           method: "PUT",
           headers: {
@@ -88,7 +89,7 @@ const AdminSettings = ({ theme: propTheme, onThemeChange }) => {
     if (!token) return setMessage("error:Login first!");
     try {
       const res = await fetch(
-        `http://localhost:1000/api/v1/auth/user/${userId}`,
+        `${AUTH_URL}/user/${userId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },

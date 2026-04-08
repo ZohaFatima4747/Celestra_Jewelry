@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./OwnerDashboard.css";
+import { API, AUTH_URL as AUTH_API } from "../utils/api";
 
-const API      = "http://localhost:1000/api/admin";
-const AUTH_API = "http://localhost:1000/api/v1/auth";
+const API_ADMIN = `${API}/admin`;
 
 const STATUS_CONFIG = {
   completed:     { label: "Completed",   color: "#22c55e", bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.25)" },
@@ -154,7 +154,7 @@ const StatsSection = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API}/stats`, { headers: { Authorization: `Bearer ${getToken()}` } })
+    fetch(`${API_ADMIN}/stats`, { headers: { Authorization: `Bearer ${getToken()}` } })
       .then(r => r.json())
       .then(data => { setStats(data); setLoading(false); })
       .catch(() => setLoading(false));
@@ -225,7 +225,7 @@ const OrdersSection = () => {
   const [updating, setUpdating] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/orders`, { headers: { Authorization: `Bearer ${getToken()}` } })
+    fetch(`${API_ADMIN}/orders`, { headers: { Authorization: `Bearer ${getToken()}` } })
       .then(r => r.json())
       .then(data => { setOrders(data); setLoading(false); })
       .catch(() => setLoading(false));
@@ -234,7 +234,7 @@ const OrdersSection = () => {
   const updateStatus = async (orderId, status) => {
     setUpdating(orderId);
     try {
-      const res = await fetch(`${API}/orders/${orderId}`, {
+      const res = await fetch(`${API_ADMIN}/orders/${orderId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ status }),
@@ -329,7 +329,7 @@ const OrdersSection = () => {
                         <div className="od-cinfo"><span>📍</span><span>{order.customer?.address}</span></div>
                         <div className="od-cinfo">
                           <span>💳</span>
-                          <span>{order.stripePayment?.paymentIntentId === "COD" ? "Cash on Delivery" : "Card (Stripe)"}</span>
+                          <span>Cash on Delivery</span>
                         </div>
                       </div>
                     </div>
@@ -366,7 +366,7 @@ const UsersSection = () => {
   const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/users`, { headers: { Authorization: `Bearer ${getToken()}` } })
+    fetch(`${API_ADMIN}/users`, { headers: { Authorization: `Bearer ${getToken()}` } })
       .then(r => r.json())
       .then(data => { setUsers(data); setLoading(false); })
       .catch(() => setLoading(false));
@@ -376,7 +376,7 @@ const UsersSection = () => {
     if (!window.confirm("Delete this user?")) return;
     setDeleting(userId);
     try {
-      await fetch(`${API}/users/${userId}`, {
+      await fetch(`${API_ADMIN}/users/${userId}`, {
         method: "DELETE", headers: { Authorization: `Bearer ${getToken()}` },
       });
       setUsers(prev => prev.filter(u => u._id !== userId));

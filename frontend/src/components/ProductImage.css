@@ -1,0 +1,59 @@
+/* Wrapper — aspect-ratio set by parent, this fills it */
+.pi-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--lavender, #f3f0f8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Skeleton shimmer — same size as the image slot */
+.pi-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    var(--lavender, #f3f0f8) 25%,
+    #e8e4f0 50%,
+    var(--lavender, #f3f0f8) 75%
+  );
+  background-size: 200% 100%;
+  animation: pi-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes pi-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Image — hidden until loaded to avoid flash of broken layout */
+.pi-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  /* Prevent layout shift — image fills the aspect-ratio box */
+  position: relative;
+  z-index: 1;
+}
+
+.pi-img--visible {
+  opacity: 1;
+}
+
+/* Error state */
+.pi-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--muted, #9ca3af);
+  font-size: 2rem;
+  opacity: 0.4;
+}

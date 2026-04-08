@@ -1,0 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap');
+
+/* ── BASE ── */
+.celestra-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.celestra-logo .logo-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #0d0d1c;
+}
+
+.celestra-logo .orbit-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(195, 160, 60, 0.55);
+  animation: orbitSpin 12s linear infinite;
+}
+
+.celestra-logo .orbit-ring::before {
+  content: '';
+  position: absolute;
+  background: #c8a830;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  box-shadow: 0 0 8px 2px rgba(200, 168, 48, 0.65);
+}
+
+@keyframes orbitSpin {
+  from { transform: rotate(-30deg); }
+  to   { transform: rotate(330deg); }
+}
+
+.celestra-logo .logo-center {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.celestra-logo .logo-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  color: #ddd8cc;
+  line-height: 1;
+}
+
+.celestra-logo .logo-sub {
+  font-family: 'Cinzel', serif;
+  font-weight: 400;
+  color: #b8952a;
+}
+
+/* ── NAVBAR (76px) ── */
+.logo-navbar                          { width: 76px; height: 76px; }
+.logo-navbar .orbit-ring              { width: 66px; height: 66px; }
+.logo-navbar .orbit-ring::before      { width: 7px; height: 7px; margin-top: -34px; margin-left: -3.5px; }
+.logo-navbar .logo-name               { font-size: 10px; letter-spacing: 2px; margin-bottom: 3px; }
+.logo-navbar .logo-sub                { font-size: 6px; letter-spacing: 2px; font-weight: 600; }
+
+/* ── FLAT MOBILE LOGO ── */
+.celestra-logo-flat {
+  display: none;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.celestra-logo-flat .flat-hex {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.celestra-logo-flat .flat-hex svg {
+  width: 100%;
+  height: 100%;
+}
+
+.celestra-logo-flat .flat-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  min-width: 0;
+}
+
+.celestra-logo-flat .flat-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 2.5px;
+  color: #ddd8cc;
+  white-space: nowrap;
+}
+
+.celestra-logo-flat .flat-sub {
+  font-family: 'Cinzel', serif;
+  font-weight: 400;
+  font-size: 7.5px;
+  letter-spacing: 2px;
+  color: #b8952a;
+  margin-top: 3px;
+  white-space: nowrap;
+}
+
+/* 600px and below — show flat logo */
+@media (max-width: 600px) {
+  .celestra-logo-flat { display: flex; }
+  .celestra-logo.logo-navbar { display: none; }
+}
+
+/* 400px — slightly smaller hex + tighter text */
+@media (max-width: 400px) {
+  .celestra-logo-flat { gap: 7px; }
+  .celestra-logo-flat .flat-hex { width: 30px; height: 30px; }
+  .celestra-logo-flat .flat-name { font-size: 11px; letter-spacing: 2px; }
+  .celestra-logo-flat .flat-sub { font-size: 6.5px; letter-spacing: 1.5px; }
+}
+
+/* 320px (Galaxy Fold, etc.) — minimal */
+@media (max-width: 340px) {
+  .celestra-logo-flat { gap: 6px; }
+  .celestra-logo-flat .flat-hex { width: 26px; height: 26px; }
+  .celestra-logo-flat .flat-name { font-size: 10px; letter-spacing: 1.5px; }
+  .celestra-logo-flat .flat-sub { font-size: 6px; letter-spacing: 1px; }
+}
+
+/* ── FOOTER (90px) ── */
+.logo-footer                          { width: 90px; height: 90px; }
+.logo-footer .orbit-ring              { width: 78px; height: 78px; }
+.logo-footer .orbit-ring::before      { width: 7px; height: 7px; margin-top: -40px; margin-left: -3.5px; }
+.logo-footer .logo-name               { font-size: 12px; letter-spacing: 3px; margin-bottom: 3px; }
+.logo-footer .logo-sub                { font-size: 8px; letter-spacing: 3px; font-weight: 600; }
+
+/* ── LARGE (220px) ── */
+.logo-lg                              { width: 220px; height: 220px; }
+.logo-lg .orbit-ring                  { width: 190px; height: 190px; }
+.logo-lg .orbit-ring::before          { width: 9px; height: 9px; margin-top: -96px; margin-left: -4.5px; }
+.logo-lg .logo-name                   { font-size: 22px; letter-spacing: 6px; margin-bottom: 6px; }
+.logo-lg .logo-sub                    { font-size: 9px; letter-spacing: 6px; }

@@ -1,165 +1,253 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Form.css";
+import logo from "../assets/logo.jpeg";
+import { AUTH_URL } from "../utils/api";
 
-// 🔹 Local backend URL
-const BASE_URL = "http://localhost:1000/api/v1/auth";
+const BASE_URL = AUTH_URL;
 
-// 🔹 Refresh Access Token function
 export const refreshAccessToken = async () => {
   const refreshToken = localStorage.getItem("refreshToken");
   if (!refreshToken) return null;
-
   try {
-    const response = await fetch(`${BASE_URL}/refresh`, {
+    const res = await fetch(`${BASE_URL}/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
     });
-
-    const data = await response.json();
+    const data = await res.json();
     if (data.token) {
       localStorage.setItem("token", data.token);
       return data.token;
     }
     return null;
-  } catch (error) {
-    console.error("Refresh token error:", error);
+  } catch (err) {
+    console.error("Refresh token error:", err);
     return null;
   }
 };
 
-const ContactForm = () => {
+const ContactForm = ({ onClose, setCartItems }) => {
   const navigate = useNavigate();
-  const [isSignUp, setIsSignUp] = useState(true);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+
+  const [flow, setFlow]               = useState(null);
+  const [formData, setFormData]       = useState({ name: "", email: "", password: "" });
   const [responseMsg, setResponseMsg] = useState("");
-  const [adminLogin, setAdminLogin] = useState(false);
+  const [isError, setIsError]         = useState(false);
+  const [adminLogin, setAdminLogin]   = useState(false);
+  const [loading, setLoading]         = useState(false);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("guestEmail") || "";
+    const savedName  = localStorage.getItem("guestName")  || "";
+
+    if (savedEmail) {
+      setFormData({ name: savedName, email: savedEmail, password: "" });
+      fetch(`${BASE_URL}/check-guest?email=${encodeURIComponent(savedEmail)}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.isGuest) {
+            setFormData({ name: data.name || savedName, email: savedEmail, password: "" });
+            setFlow("set-password");
+          } else {
+            setFlow("signup");
+          }
+        })
+        .catch(() => setFlow("signup"));
+    } else {
+      setFlow("signup");
+    }
+  }, []);
 
   const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleEmailBlur = async () => {
+    if (flow !== "signup" || adminLogin || !formData.email) return;
+    try {
+      const res  = await fetch(`${BASE_URL}/check-guest?email=${encodeURIComponent(formData.email)}`);
+      const data = await res.json();
+      if (data.isGuest) {
+        setFlow("set-password");
+        if (data.name) setFormData((prev) => ({ ...prev, name: data.name }));
+      }
+    } catch {}
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true);
+    setResponseMsg("");
     try {
-      const url =
-        isSignUp && !adminLogin ? `${BASE_URL}/signup` : `${BASE_URL}/login`;
+      const url = (flow === "login" || adminLogin)
+        ? `${BASE_URL}/login`
+        : `${BASE_URL}/signup`; // handles both signup and set-password (guest → full user)
 
-      const response = await fetch(url, {
+      const savedCart = localStorage.getItem("guestCart");
+      const body = { ...formData, guestCart: savedCart ? JSON.parse(savedCart) : [] };
+
+      const res  = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(body),
       });
-
-      const data = await response.json();
-      setResponseMsg(data.message || "Success!");
-      setFormData({ name: "", email: "", password: "" });
+      const data = await res.json();
 
       if (data.token) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("userId", data.userId);
-        if (data.refreshToken)
-          localStorage.setItem("refreshToken", data.refreshToken);
+        if (data.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
+        localStorage.removeItem("guestEmail");
+        localStorage.removeItem("guestName");
+        if (savedCart) localStorage.removeItem("guestCart");
 
-        // Role check — admin ko owner dashboard
-        try {
-          const decoded = JSON.parse(atob(data.token.split(".")[1]));
-          if (decoded.role === "admin") {
-            navigate("/owner");
-          } else {
-            navigate("/shop");
-          }
-        } catch {
-          navigate("/shop");
+        let role = "user";
+        try { role = JSON.parse(atob(data.token.split(".")[1])).role || "user"; } catch {}
+
+        if (savedCart && setCartItems) setCartItems(JSON.parse(savedCart));
+
+        if (role === "admin") {
+          navigate("/owner");
+        } else {
+          navigate("/admin");
         }
+      } else {
+        setIsError(true);
+        setResponseMsg(data.message || "Something went wrong.");
+        setTimeout(() => setResponseMsg(""), 3500);
       }
-
-      setTimeout(() => setResponseMsg(""), 3000);
-    } catch (error) {
-      setResponseMsg("Server error: " + error.message);
-      setTimeout(() => setResponseMsg(""), 3000);
+    } catch (err) {
+      setIsError(true);
+      setResponseMsg("Server error: " + err.message);
+      setTimeout(() => setResponseMsg(""), 3500);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const isSetPassword = flow === "set-password" && !adminLogin;
+  const isSignUp      = flow === "signup"        && !adminLogin;
+  const isLogin       = flow === "login"         || adminLogin;
+
+  const title = isSetPassword ? "Set Your Password"
+              : isSignUp      ? "Create Account"
+              : "Welcome Back";
+
+  const subtitle = isSetPassword ? "You already have orders — just set a password to activate your account."
+                 : isSignUp      ? "Join Celestra to track your orders and save your wishlist."
+                 : "Welcome back to Celestra Jewelry.";
+
   return (
-    <div className="login-container">
-      <div className="auth-wrapper">
-        {/* ================= FORM BOX ================= */}
-        <div className="login-box">
-          <h2>{isSignUp && !adminLogin ? "Sign Up" : "Login"}</h2>
+    <div className="cf-card">
+      {/* Close button */}
+      {typeof onClose === "function" && (
+        <button className="cf-close" onClick={onClose} aria-label="Close">✕</button>
+      )}
 
-          <form onSubmit={handleSubmit}>
-            {isSignUp && !adminLogin && (
-              <div className="input-group">
-                <label>Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter your name"
-                  required
-                />
-              </div>
-            )}
+      {/* Header */}
+      <div className="cf-header">
+        <div className="cf-logo-badge">
+          <img src={logo} alt="Celestra" />
+        </div>
+        <div>
+          <h2 className="cf-title">{title}</h2>
+          <p className="cf-subtitle">{subtitle}</p>
+        </div>
+      </div>
 
-            <div className="input-group">
-              <label>Email</label>
+      {/* Loading state */}
+      {flow === null ? (
+        <div className="cf-detecting">
+          <div className="cf-spinner" />
+          <span>Checking account...</span>
+        </div>
+      ) : (
+        <form className="cf-form" onSubmit={handleSubmit}>
+          {(isSignUp || isSetPassword) && (
+            <div className="cf-field">
+              <label>Name</label>
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                placeholder="Your full name"
                 required
+                autoComplete="name"
               />
             </div>
+          )}
 
-            <div className="input-group">
-              <label>Password</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                required
-              />
-            </div>
+          <div className="cf-field">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              onBlur={handleEmailBlur}
+              placeholder="you@example.com"
+              required
+              autoComplete="email"
+              readOnly={isSetPassword}
+              className={isSetPassword ? "cf-readonly" : ""}
+            />
+          </div>
 
-            <button type="submit" className="login-btn">
-              {isSignUp && !adminLogin ? "Sign Up" : "Login"}
-            </button>
-          </form>
+          <div className="cf-field">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder={isSetPassword ? "Create a password" : "Enter your password"}
+              required
+              autoComplete={isLogin ? "current-password" : "new-password"}
+            />
+          </div>
 
-          {responseMsg && <p className="response-msg">{responseMsg}</p>}
-
-          {!adminLogin && (
-            <p className="toggle-text" onClick={() => setIsSignUp(!isSignUp)}>
-              {isSignUp
-                ? "Already have an account? Login"
-                : "Don't have an account? Sign Up"}
+          {responseMsg && (
+            <p className={`cf-msg ${isError ? "cf-msg--error" : "cf-msg--success"}`}>
+              {responseMsg}
             </p>
           )}
-        </div>
 
-        {/* ================= SIGN UP INSTRUCTIONS ================= */}
-        {isSignUp && !adminLogin && (
-          <div className="signup-instructions">
-            <h3>⚠ Important Instructions</h3>
-            <ul>
-              <li>🔒 Please make sure to remember your password</li>
-              <li>🧠 Use a strong and unique password for better security</li>
-              <li>🚫 Do not share your password with anyone</li>
-            </ul>
-          </div>
-        )}
-      </div>
+          <button type="submit" className="cf-submit" disabled={loading}>
+            {loading ? <span className="cf-btn-spinner" /> : null}
+            {loading ? "Please wait..." : isSetPassword ? "Activate Account" : isSignUp ? "Sign Up" : "Login"}
+          </button>
+        </form>
+      )}
+
+      {/* Footer toggles */}
+      {flow !== null && !adminLogin && !isSetPassword && (
+        <p className="cf-toggle" onClick={() => setFlow(isLogin ? "signup" : "login")}>
+          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          <span>{isLogin ? "Sign Up" : "Login"}</span>
+        </p>
+      )}
+
+      {isSetPassword && (
+        <p
+          className="cf-toggle"
+          onClick={() => {
+            localStorage.removeItem("guestEmail");
+            localStorage.removeItem("guestName");
+            setFlow("login");
+            setFormData({ name: "", email: "", password: "" });
+          }}
+        >
+          Not you? <span>Login with a different account</span>
+        </p>
+      )}
+
+      {/* Set-password info strip */}
+      {isSetPassword && (
+        <div className="cf-info-strip">
+          🛍 We found your previous orders — they'll appear in your dashboard after activation.
+        </div>
+      )}
     </div>
   );
 };

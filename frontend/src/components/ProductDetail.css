@@ -1,0 +1,431 @@
+/* ── Loading / Not found ── */
+.pd-loading {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pd-spinner {
+  width: 36px; height: 36px;
+  border: 2px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: pdSpin 0.8s linear infinite;
+}
+@keyframes pdSpin { to { transform: rotate(360deg); } }
+
+.pd-not-found {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.pd-not-found button {
+  padding: 10px 24px;
+  background: var(--dark);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ── Page wrapper ── */
+.pd-wrap {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 40px 60px;
+}
+
+/* ── Breadcrumb ── */
+.pd-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.pd-breadcrumb span { cursor: pointer; transition: color 0.15s; }
+.pd-breadcrumb span:hover { color: var(--dark); }
+.pd-bc-sep { color: var(--border); cursor: default; }
+.pd-bc-current { color: var(--dark); font-weight: 500; cursor: default; }
+
+.pd-back-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.15s;
+  margin-right: 8px;
+}
+.pd-back-btn:hover { background: var(--dark); color: #fff; border-color: var(--dark); }
+
+/* ── Main grid ── */
+.pd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+}
+
+/* ── Gallery ── */
+.pd-gallery {
+  display: flex;
+  gap: 14px;
+  position: sticky;
+  top: 90px;
+}
+
+.pd-thumbs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.pd-thumb {
+  width: 72px;
+  height: 72px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  /* ProductImage fills this box */
+}
+.pd-thumb.active { border-color: var(--gold); }
+.pd-thumb:hover  { border-color: var(--gold); }
+
+.pd-main-img {
+  flex: 1;
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  aspect-ratio: 3/4;
+  /* ProductImage fills this box */
+}
+/* Hover scale on main image */
+.pd-main-img .pi-img { transition: transform 0.4s ease; }
+.pd-main-img:hover .pi-img { transform: scale(1.03); }
+.pd-sold-out-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: var(--dark);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ── Info panel ── */
+.pd-info {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.pd-category {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--gold);
+}
+
+.pd-name {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--dark);
+  line-height: 1.15;
+  margin: 0;
+}
+
+.pd-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pd-stars { font-size: 14px; color: var(--gold); letter-spacing: 1px; }
+.pd-rating-num { font-size: 12px; color: var(--muted); }
+.pd-reviews { font-size: 11px; color: var(--muted); }
+
+.pd-price-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.pd-price {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--dark);
+}
+.pd-stock-tag {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 3px;
+}
+.pd-stock-tag.in  { background: rgba(200,160,96,0.1); color: var(--gold); border: 1px solid rgba(200,160,96,0.3); }
+.pd-stock-tag.out { background: rgba(200,80,80,0.08); color: #c05050; border: 1px solid rgba(200,80,80,0.2); }
+
+.pd-divider { height: 1px; background: var(--border); }
+
+.pd-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin: 0;
+}
+
+/* ── Option groups ── */
+.pd-option-group { display: flex; flex-direction: column; gap: 10px; }
+
+.pd-option-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--dark);
+}
+.pd-option-label span { color: var(--gold); font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+.pd-colors { display: flex; gap: 10px; flex-wrap: wrap; }
+.pd-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: 0.15s;
+  outline: none;
+  min-height: unset;
+  min-width: unset;
+}
+.pd-color-swatch:hover  { border-color: var(--dark); }
+.pd-color-swatch.active { border-color: var(--dark); box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--dark); }
+
+.pd-sizes { display: flex; gap: 8px; flex-wrap: wrap; }
+.pd-size-btn {
+  min-width: 44px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--dark);
+  cursor: pointer;
+  transition: 0.15s;
+  min-height: unset;
+  white-space: nowrap;
+}
+.pd-size-btn:hover  { border-color: var(--dark); }
+.pd-size-btn.active { background: var(--dark); color: #fff; border-color: var(--dark); }
+
+.pd-qty {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: fit-content;
+  overflow: hidden;
+}
+.pd-qty button {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: var(--dark);
+  cursor: pointer;
+  transition: background 0.15s;
+  min-height: unset;
+  min-width: unset;
+}
+.pd-qty button:hover { background: var(--lavender); }
+.pd-qty span {
+  width: 48px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dark);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  line-height: 40px;
+}
+
+/* ── CTA ── */
+.pd-cta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+.pd-add-btn {
+  flex: 1;
+  min-width: 200px;
+  padding: 14px 28px;
+  background: var(--dark);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+  min-height: unset;
+}
+.pd-add-btn:hover:not(:disabled) { background: #2d1f50; }
+.pd-add-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+.pd-wish-btn {
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.15s;
+  min-height: unset;
+  min-width: unset;
+  flex-shrink: 0;
+}
+.pd-wish-btn:hover  { border-color: var(--gold); }
+.pd-wish-btn.active { border-color: #e74c3c; }
+
+.pd-cart-msg {
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 500;
+  padding: 8px 12px;
+  background: rgba(200,160,96,0.08);
+  border: 1px solid rgba(200,160,96,0.2);
+  border-radius: 4px;
+}
+
+.pd-cart-msg--error {
+  color: #e74c3c;
+  background: rgba(231,76,60,0.08);
+  border-color: rgba(231,76,60,0.3);
+}
+
+/* ── Trust badges ── */
+.pd-trust {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding-top: 4px;
+}
+.pd-trust-item {
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pd-trust-item span { color: var(--gold); font-size: 9px; }
+
+/* ── Related products ── */
+.pd-related {
+  margin-top: 72px;
+  padding-top: 48px;
+  border-top: 1px solid var(--border);
+}
+.pd-related-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 28px;
+}
+.pd-related-title em { font-style: italic; color: var(--gold); }
+
+.pd-related-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.pd-rel-card {
+  background: var(--bg);
+  cursor: pointer;
+  transition: background 0.15s;
+  overflow: hidden;
+}
+.pd-rel-card:hover { background: var(--lavender); }
+
+.pd-rel-img {
+  aspect-ratio: 1;
+  overflow: hidden;
+  /* ProductImage fills this box */
+}
+.pd-rel-img .pi-img { transition: transform 0.3s; }
+.pd-rel-card:hover .pd-rel-img .pi-img { transform: scale(1.04); }
+
+.pd-rel-info { padding: 14px 16px 18px; }
+.pd-rel-cat  { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.5px; color: var(--gold); }
+.pd-rel-name { font-family: "Cormorant Garamond", serif; font-size: 15px; font-weight: 600; color: var(--dark); margin: 4px 0; }
+.pd-rel-price { font-size: 13px; font-weight: 500; color: var(--dark); }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .pd-grid { gap: 40px; }
+  .pd-name { font-size: 30px; }
+  .pd-wrap { padding: 24px 24px 60px; }
+}
+
+@media (max-width: 768px) {
+  .pd-wrap { padding: 16px 20px 48px; }
+  .pd-grid { grid-template-columns: 1fr; gap: 28px; }
+  .pd-gallery { position: static; flex-direction: column-reverse; }
+  .pd-thumbs { flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
+  .pd-thumb { width: 60px; height: 60px; flex-shrink: 0; }
+  .pd-main-img { aspect-ratio: 4/3; }
+  .pd-name { font-size: 26px; }
+  .pd-price { font-size: 24px; }
+  .pd-related-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .pd-wrap { padding: 12px 16px 40px; }
+  .pd-name { font-size: 22px; }
+  .pd-price { font-size: 20px; }
+  .pd-trust { grid-template-columns: 1fr; }
+  .pd-related-grid { grid-template-columns: repeat(2, 1fr); }
+  .pd-cta { flex-wrap: wrap; gap: 10px; }
+  .pd-add-btn { width: 100%; min-width: unset; }
+  .pd-thumb { width: 52px; height: 52px; }
+  .pd-main-img { aspect-ratio: 1; }
+  .pd-related-title { font-size: 22px; }
+  .pd-breadcrumb { font-size: 10px; }
+}
+
+@media (max-width: 360px) {
+  .pd-related-grid { grid-template-columns: 1fr; }
+  .pd-name { font-size: 20px; }
+}

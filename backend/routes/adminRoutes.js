@@ -2,24 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 const Contact = require("../models/contact");
-const jwt = require("jsonwebtoken");
-
-const JWT_SECRET = "your_secret_key_here"; // same as auth routes
-
-// ── ADMIN MIDDLEWARE ──────────────────────────────
-const adminAuth = (req, res, next) => {
-  const token = req.headers["authorization"];
-  if (!token) return res.status(401).json({ message: "No token" });
-  try {
-    const decoded = jwt.verify(token.split(" ")[1], JWT_SECRET);
-    if (decoded.role !== "admin")
-      return res.status(403).json({ message: "Admin only" });
-    req.user = decoded;
-    next();
-  } catch {
-    return res.status(401).json({ message: "Invalid token" });
-  }
-};
+const Product = require("../models/Product");
+const Message = require("../models/Message");
+const { adminAuth } = require("../middleware/auth");
 
 // ── STATS ─────────────────────────────────────────
 // GET /api/admin/stats
@@ -99,6 +84,33 @@ router.put("/orders/:orderId", adminAuth, async (req, res) => {
       { new: true }
     );
     if (!order) return res.status(404).json({ message: "Order not found" });
+
+    // Fire notifications on completed
+    if (status === "completed") {
+      const orderId = order._id;
+      const shortId = `#${String(orderId).slice(-8).toUpperCase()}`;
+      try {
+        // Customer notification
+        await Message.create({
+          userId: order.sessionId,
+          title: "Order Delivered 🎉",
+          body: `Your order ${shortId} has been completed and delivered. Thank you for shopping with us!`,
+          orderId,
+          type: "status_update",
+        });
+        // Admin notification
+        await Message.create({
+          userId: "admin",
+          title: "Order Marked as Completed ✅",
+          body: `Order ${shortId} for ${order.customer?.name || "customer"} has been marked as completed. Total: PKR ${order.total?.toLocaleString()}`,
+          orderId,
+          type: "status_update",
+        });
+      } catch (msgErr) {
+        console.error("Failed to save completion notifications:", msgErr.message);
+      }
+    }
+
     res.json({ success: true, order });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -109,7 +121,7 @@ router.put("/orders/:orderId", adminAuth, async (req, res) => {
 // GET /api/admin/users
 router.get("/users", adminAuth, async (req, res) => {
   try {
-    const users = await Contact.find({ role: "user" }).select("-password");
+    const users = await Contact.find({ role: "user" }).select("-password").sort({ _id: -1 });
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -122,6 +134,159 @@ router.delete("/users/:userId", adminAuth, async (req, res) => {
   try {
     await Contact.findByIdAndDelete(req.params.userId);
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ── PRODUCTS ──────────────────────────────────────
+// GET /api/admin/products
+router.get("/products", adminAuth, async (req, res) => {
+  try {
+    const products = await Product.find({}).sort({ createdAt: -1 });
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// POST /api/admin/products
+router.post("/products", adminAuth, async (req, res) => {
+  try {
+    const { name, price, stock, category, images } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ message: "Product name is required" });
+    if (price === undefined || price === null || isNaN(Number(price))) return res.status(400).json({ message: "Valid price is required" });
+    if (!category || !category.trim()) return res.status(400).json({ message: "Category is required" });
+    if (!images || !Array.isArray(images) || images.length === 0) return res.status(400).json({ message: "At least one image is required" });
+
+    const payload = {
+      ...req.body,
+      name: name.trim(),
+      category: category.trim().toLowerCase(),
+      price: Number(price),
+      stock: Number(stock || 0),
+    };
+    const product = new Product(payload);
+    await product.save();
+    res.status(201).json({ success: true, product });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PUT /api/admin/products/:productId
+router.put("/products/:productId", adminAuth, async (req, res) => {
+  try {
+    const updates = { ...req.body };
+    if (updates.category) updates.category = updates.category.trim().toLowerCase();
+    if (updates.price !== undefined) updates.price = Number(updates.price);
+    if (updates.stock !== undefined) updates.stock = Number(updates.stock);
+
+    const product = await Product.findByIdAndUpdate(req.params.productId, updates, { new: true, runValidators: true });
+    if (!product) return res.status(404).json({ message: "Product not found" });
+    res.json({ success: true, product });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// DELETE /api/admin/products/:productId
+router.delete("/products/:productId", adminAuth, async (req, res) => {
+  try {
+    await Product.findByIdAndDelete(req.params.productId);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ── SALES / FINANCE ───────────────────────────────
+// GET /api/admin/sales
+router.get("/sales", adminAuth, async (req, res) => {
+  try {
+    const orders = await Order.find({ status: "completed" });
+
+    // Monthly revenue for last 6 months
+    const monthly = {};
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const key = d.toLocaleDateString("en-PK", { month: "short", year: "numeric" });
+      monthly[key] = 0;
+    }
+
+    orders.forEach((o) => {
+      const key = new Date(o.createdAt).toLocaleDateString("en-PK", { month: "short", year: "numeric" });
+      if (key in monthly) monthly[key] += o.total;
+    });
+
+    const monthlyData = Object.entries(monthly).map(([month, revenue]) => ({
+      month,
+      revenue,
+      profit: revenue * 0.3, // estimated 30% margin
+      loss: 0,
+    }));
+
+    // Payment method summary (all orders)
+    const allOrders = await Order.find({});
+    const paymentSummary = { COD: 0, Online: 0 };
+    allOrders.forEach((o) => {
+      if (o.status === "pending COD" || o.status === "pending") paymentSummary.COD += o.total;
+      else paymentSummary.Online += o.total;
+    });
+
+    const totalRevenue = orders.reduce((s, o) => s + o.total, 0);
+    const totalProfit = totalRevenue * 0.3;
+
+    res.json({ monthlyData, paymentSummary, totalRevenue, totalProfit });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ── ALERTS ────────────────────────────────────────
+// GET /api/admin/alerts
+router.get("/alerts", adminAuth, async (req, res) => {
+  try {
+    const lowStock = await Product.find({ stock: { $lte: 5 } }).select("name stock category");
+    const pendingOrders = await Order.find({ status: { $in: ["pending", "pending COD"] } })
+      .select("customer.name total createdAt status")
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    res.json({ lowStock, pendingOrders });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ── ADMIN NOTIFICATIONS ───────────────────────────
+// GET /api/admin/notifications
+router.get("/notifications", adminAuth, async (req, res) => {
+  try {
+    const notifications = await Message.find({ userId: "admin" }).sort({ createdAt: -1 }).limit(50);
+    res.json(notifications);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// PATCH /api/admin/notifications/read-all  ← must be before /:id/read
+router.patch("/notifications/read-all", adminAuth, async (req, res) => {
+  try {
+    await Message.updateMany({ userId: "admin" }, { isRead: true });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// PATCH /api/admin/notifications/:id/read
+router.patch("/notifications/:id/read", adminAuth, async (req, res) => {
+  try {
+    const msg = await Message.findByIdAndUpdate(req.params.id, { isRead: true }, { new: true });
+    if (!msg) return res.status(404).json({ message: "Not found" });
+    res.json(msg);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }

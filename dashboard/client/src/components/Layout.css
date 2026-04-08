@@ -1,0 +1,20 @@
+.layout { display: flex; min-height: 100vh; background: #f4f6fb; }
+.main-content { margin-left: 230px; flex: 1; padding: 32px; min-height: 100vh; min-width: 0; }
+
+.menu-toggle {
+  display: none;
+  background: #1a1a2e;
+  color: #c9a96e;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-bottom: 16px;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .main-content { margin-left: 0; padding: 16px; }
+  .menu-toggle { display: block; }
+}
