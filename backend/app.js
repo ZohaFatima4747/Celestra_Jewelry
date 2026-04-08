@@ -22,12 +22,12 @@ app.use(cors());
 
 // Static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/assets",  express.static(path.join(__dirname, "../frontend/src/assets")));
+app.use("/assets",  express.static(path.join(__dirname, "../frontend/dist/assets"))); // Optional: static assets
 
 // Database
 connectDB();
 
-// Routes
+// API Routes
 app.use("/api/products",   productRoutes);
 app.use("/api/cart",       cartRoutes);
 app.use("/api/orders",     orderRoutes);
@@ -38,7 +38,18 @@ app.use("/api/upload",     uploadRoutes);
 app.use("/api/v1/auth",    authRoutes);
 app.use("/api/contact-us", contactUsRoutes);
 
-app.get("/", (_, res) => res.send("Celestra E-commerce API running."));
+// Serve main frontend (React)
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+app.get("/*splat", (req, res, next) => {
+  if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) return next();
+  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+});
+
+// Serve dashboard frontend (React)
+app.use("/dashboard", express.static(path.join(__dirname, "../dashboard/client/dist")));
+app.get("/dashboard/*splat", (req, res) => {
+  res.sendFile(path.join(__dirname, "../dashboard/client/dist/index.html"));
+});
 
 const PORT = process.env.PORT || 1000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
