@@ -74,7 +74,8 @@ export default function Products() {
       const thumb = url.endsWith('-full.webp') ? url.replace(/-full\.webp$/, '-thumb.webp') : url;
       return base + thumb;
     }
-    return base + '/assets/' + encodeURIComponent(url);
+    // Plain filename from seed data — served from /product-images
+    return base + '/product-images/' + encodeURIComponent(url);
   };
 
   if (loading) return <div className="prod-loading">Loading products...</div>;
