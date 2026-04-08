@@ -8,16 +8,30 @@ const contactSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
+        unique: true,
     },
     password: {
         type: String,
-        required: true,
+        required: false,
+        default: null,
     },
-    role: { 
-        type: String, 
-        enum: ["admin", "user"], 
-        default: "user"
-     }
+    phone: {
+        type: String,
+        default: null,
+    },
+    city: {
+        type: String,
+        default: null,
+    },
+    isGuest: {
+        type: Boolean,
+        default: false,
+    },
+    role: {
+        type: String,
+        enum: ["admin", "user"],
+        default: "user",
+    }
 });
 
 module.exports = mongoose.model('Contact', contactSchema);

@@ -7,7 +7,9 @@ const OrderSchema = new mongoose.Schema({
       productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
       name: String,
       price: Number,
-      qty: { type: Number, default: 1 }
+      qty: { type: Number, default: 1 },
+      selectedSize: { type: String, default: null },
+      selectedColor: { type: String, default: null },
     }
   ],
   total: { type: Number, required: true },
@@ -18,10 +20,6 @@ const OrderSchema = new mongoose.Schema({
     address: { type: String, required: true }
   },
   status: { type: String, default: 'pending' }, // pending, completed, cancelled
-  stripePayment: { 
-    paymentIntentId: String,
-    receipt_url: String
-  },
   createdAt: { type: Date, default: Date.now }
 });
 
