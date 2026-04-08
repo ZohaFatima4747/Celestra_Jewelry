@@ -1,5 +1,6 @@
 import React from "react";
 import "./BannerSlider.css";
+import logo from "../assets/logo.jpeg";
 
 const TRUST = [
   { icon: "✦", text: "Handcrafted Jewellery" },
@@ -39,16 +40,9 @@ const BannerSlider = ({ onShopNow }) => (
         </div>
       </div>
 
-      {/* Luxury Wordmark */}
+      {/* Logo */}
       <div className="banner-wordmark">
-        <div className="wm-house">THE HOUSE OF</div>
-        <div className="wm-name">CELESTRA</div>
-        <div className="wm-divider">
-          <span className="wm-line" />
-          <span className="wm-star">✦</span>
-          <span className="wm-line" />
-        </div>
-        <div className="wm-sub">JEWELRY &amp; ATELIER</div>
+        <img src={logo} alt="Celestra Logo" className="banner-logo-img" />
       </div>
     </div>
 

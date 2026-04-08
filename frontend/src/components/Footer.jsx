@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import "./Footer.css";
-import logo from "../assets/logo.jpeg";
+import CelestraLogo from "./CelestraLogo";
 
 const SHOP_CATEGORIES = [
   { label: "Rings",        value: "rings" },
@@ -29,7 +29,7 @@ const Footer = () => {
       <div className="footer-col footer-brand">
         <div className="footer-brand-inner">
           <div className="footer-logo-wrap">
-            <img src={logo} alt="Celestra Jewelry" className="footer-logo-img" />
+            <CelestraLogo size="navbar" onClick={() => navigate("/")} />
           </div>
           <p className="footer-tagline">
             Fine jewellery inspired by the cosmos. Crafted for those who carry light within them.
