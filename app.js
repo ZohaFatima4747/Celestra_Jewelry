@@ -22,7 +22,8 @@ app.use(cors());
 
 // Static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/assets",  express.static(path.join(__dirname, "../frontend/dist/assets"))); // Optional: static assets
+app.use("/product-images", express.static(path.join(__dirname, "../frontend/src/assets")));
+app.use("/assets",  express.static(path.join(__dirname, "../frontend/dist/assets")));
 
 // Database
 connectDB();
