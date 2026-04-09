@@ -19,7 +19,15 @@ const contactSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    province: {
+        type: String,
+        default: null,
+    },
     city: {
+        type: String,
+        default: null,
+    },
+    address: {
         type: String,
         default: null,
     },
