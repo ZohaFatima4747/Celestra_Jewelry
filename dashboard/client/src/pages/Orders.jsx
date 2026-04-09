@@ -37,10 +37,12 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
           <section className="od-section">
             <h4>Customer</h4>
             <div className="od-grid">
-              <div><label>Name</label><span>{order.customer?.name}</span></div>
-              <div><label>Email</label><span>{order.customer?.email}</span></div>
+              <div><label>Name</label><span>{order.customer?.name || '—'}</span></div>
+              <div><label>Email</label><span>{order.customer?.email || '—'}</span></div>
               <div><label>Phone</label><span>{order.customer?.phone || '—'}</span></div>
-              <div><label>Address</label><span>{order.customer?.address || '—'}</span></div>
+              <div><label>Province</label><span>{order.customer?.province || '—'}</span></div>
+              <div><label>City</label><span>{order.customer?.city || '—'}</span></div>
+              <div className="od-grid-full"><label>Address</label><span>{order.customer?.address || '—'}</span></div>
             </div>
           </section>
 
@@ -137,9 +139,10 @@ export default function Orders() {
   };
 
   const exportCSV = () => {
-    const rows = [['Order ID', 'Customer', 'Email', 'Phone', 'Total', 'Status', 'Date']];
+    const rows = [['Order ID', 'Customer', 'Email', 'Phone', 'Province', 'City', 'Address', 'Total', 'Status', 'Date']];
     filtered.forEach((o) => rows.push([
-      o._id, o.customer?.name, o.customer?.email, o.customer?.phone,
+      o._id, o.customer?.name, o.customer?.email, o.customer?.phone || '',
+      o.customer?.province || '', o.customer?.city || '', `"${o.customer?.address || ''}"`,
       o.total, o.status, new Date(o.createdAt).toLocaleDateString()
     ]));
     const csv = rows.map((r) => r.join(',')).join('\n');
@@ -186,6 +189,12 @@ export default function Orders() {
                 <td>
                   <div className="customer-name">{o.customer?.name}</div>
                   <div className="customer-email">{o.customer?.email}</div>
+                  {o.customer?.phone && <div className="customer-meta">{o.customer.phone}</div>}
+                  {(o.customer?.city || o.customer?.province) && (
+                    <div className="customer-meta">
+                      {[o.customer.city, o.customer.province].filter(Boolean).join(', ')}
+                    </div>
+                  )}
                 </td>
                 <td>
                   <div>{o.items?.length} item(s)</div>

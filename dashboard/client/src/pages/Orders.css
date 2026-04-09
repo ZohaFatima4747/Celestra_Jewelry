@@ -24,6 +24,7 @@
 .mono { font-family: monospace; font-size: 0.82rem; color: #888; }
 .customer-name { font-weight: 600; color: #1a1a2e; }
 .customer-email { font-size: 0.8rem; color: #888; }
+.customer-meta { font-size: 0.78rem; color: #aaa; margin-top: 1px; }
 .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
 .status-select { padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.82rem; cursor: pointer; max-width: 130px; }
 .empty-row { text-align: center; color: #aaa; padding: 40px; }
@@ -70,6 +71,7 @@
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px;
 }
 .od-grid > div { display: flex; flex-direction: column; gap: 2px; }
+.od-grid-full { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 2px; }
 .od-grid label { font-size: 0.75rem; color: #aaa; font-weight: 500; }
 .od-grid span { font-size: 0.88rem; color: #1a1a2e; font-weight: 500; }
 
