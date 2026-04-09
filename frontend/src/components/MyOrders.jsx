@@ -293,11 +293,19 @@ const MyOrders = ({ isDark }) => {
                         </div>
                         <div className="mo-info">
                           <span>📞</span>
-                          <span>{order.customer?.phone}</span>
+                          <span>{order.customer?.phone || '—'}</span>
                         </div>
+                        {(order.customer?.city || order.customer?.province) && (
+                          <div className="mo-info">
+                            <span>🏙️</span>
+                            <span>
+                              {[order.customer?.city, order.customer?.province].filter(Boolean).join(', ')}
+                            </span>
+                          </div>
+                        )}
                         <div className="mo-info">
                           <span>📍</span>
-                          <span>{order.customer?.address}</span>
+                          <span>{order.customer?.address || '—'}</span>
                         </div>
                         <div className="mo-info">
                           <span>💳</span>

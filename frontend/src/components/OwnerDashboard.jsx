@@ -325,8 +325,9 @@ const OrdersSection = () => {
                         <h4>Customer</h4>
                         <div className="od-cinfo"><span>👤</span><span>{order.customer?.name}</span></div>
                         <div className="od-cinfo"><span>📧</span><span>{order.customer?.email}</span></div>
-                        <div className="od-cinfo"><span>📞</span><span>{order.customer?.phone}</span></div>
-                        <div className="od-cinfo"><span>📍</span><span>{order.customer?.address}</span></div>
+                        <div className="od-cinfo"><span>📞</span><span>{order.customer?.phone || '—'}</span></div>
+                        <div className="od-cinfo"><span>🏙️</span><span>{[order.customer?.city, order.customer?.province].filter(Boolean).join(', ') || '—'}</span></div>
+                        <div className="od-cinfo"><span>📍</span><span>{order.customer?.address || '—'}</span></div>
                         <div className="od-cinfo">
                           <span>💳</span>
                           <span>Cash on Delivery</span>
@@ -404,9 +405,16 @@ const UsersSection = () => {
               <div className="od-user-info">
                 <span className="od-user-name">{user.name}</span>
                 <span className="od-user-email">{user.email}</span>
+                {user.phone && <span className="od-user-meta">📞 {user.phone}</span>}
+                {(user.city || user.province) && (
+                  <span className="od-user-meta">
+                    📍 {[user.city, user.province].filter(Boolean).join(', ')}
+                  </span>
+                )}
               </div>
-              <div className="od-user-role">
+              <div className="od-user-badges">
                 <span className="od-role-badge">{user.role}</span>
+                {user.isGuest && <span className="od-guest-badge">Guest</span>}
               </div>
               <button className="od-user-del-btn" onClick={() => deleteUser(user._id)} disabled={deleting === user._id}>
                 {deleting === user._id ? "..." : "🗑"}
