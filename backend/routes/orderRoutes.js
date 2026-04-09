@@ -190,17 +190,21 @@ router.post("/complete-payment", orderLimiter, async (req, res) => {
 // ── PUT /api/orders/:orderId/status ───────────────────────────────────────────
 router.put("/:orderId/status", async (req, res) => {
   const { status } = req.body;
-  if (!status) return res.status(400).json({ error: "Missing status" });
+  if (status !== "cancelled")
+    return res.status(400).json({ error: "Only cancellation is allowed via this endpoint." });
 
   try {
     const order = await Order.findById(req.params.orderId);
     if (!order) return res.status(404).json({ error: "Order not found" });
 
-    if (order.status !== "pending COD")
-      return res.status(400).json({ error: "Only pending COD orders can be cancelled." });
+    if (order.status !== "pending COD" && order.status !== "pending")
+      return res.status(400).json({ error: "Only pending orders can be cancelled." });
 
-    order.status = status;
-    await order.save();
+    const updated = await Order.findByIdAndUpdate(
+      req.params.orderId,
+      { status: "cancelled" },
+      { new: true }
+    );
 
     try {
       await Message.create({
@@ -214,7 +218,7 @@ router.put("/:orderId/status", async (req, res) => {
       console.error("Failed to save cancellation notification:", err.message);
     }
 
-    res.json({ success: true, order });
+    res.json({ success: true, order: updated });
   } catch (err) {
     console.error("Error updating order status:", err);
     res.status(500).json({ error: "Server error" });
