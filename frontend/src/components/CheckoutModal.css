@@ -1,0 +1,379 @@
+/* ── Overlay ─────────────────────────────────────────────────────────────── */
+.checkout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 16px;
+}
+
+/* ── Popup card ──────────────────────────────────────────────────────────── */
+.checkout-popup {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px 24px 22px;
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  animation: coFadeIn 0.22s ease;
+}
+
+@keyframes coFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.checkout-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0d1b2a;
+  margin-bottom: 18px;
+}
+
+.checkout-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: #eee;
+  border: none;
+  padding: 5px 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+.checkout-close-btn:hover { background: #ddd; }
+
+/* ── Form fields ─────────────────────────────────────────────────────────── */
+.checkout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.checkout-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checkout-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #415a77;
+}
+
+.checkout-field input,
+.checkout-field select,
+.checkout-field textarea {
+  padding: 9px 12px;
+  border: 1.5px solid #d0d7e2;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1b263b;
+  background: #fafbfc;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  outline: none;
+  font-family: inherit;
+}
+
+.checkout-field input:focus,
+.checkout-field select:focus,
+.checkout-field textarea:focus {
+  border-color: #0077ff;
+  box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.12);
+  background: #fff;
+}
+
+.checkout-field select:disabled {
+  background: #f0f0f0;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+/* Custom city text input that appears when "Other" is selected */
+.city-custom-input {
+  margin-top: 6px;
+  padding: 9px 12px;
+  border: 1.5px solid #d0d7e2;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1b263b;
+  background: #fafbfc;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.city-custom-input:focus {
+  border-color: #0077ff;
+  box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.12);
+  background: #fff;
+}
+.has-error .city-custom-input {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.checkout-field textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+/* ── Error state ─────────────────────────────────────────────────────────── */
+.checkout-field.has-error input,
+.checkout-field.has-error select,
+.checkout-field.has-error textarea {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.field-error {
+  font-size: 12px;
+  color: #e53e3e;
+  margin-top: 2px;
+}
+
+/* ── Address preview ─────────────────────────────────────────────────────── */
+.address-preview {
+  font-size: 12.5px;
+  color: #555;
+  background: #f4f7fb;
+  border: 1px solid #dde3ed;
+  border-radius: 7px;
+  padding: 8px 12px;
+  margin-top: -4px;
+}
+
+/* ── Server error ────────────────────────────────────────────────────────── */
+.checkout-server-error {
+  font-size: 13px;
+  color: #c53030;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 7px;
+  padding: 9px 12px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.cod-btn {
+  width: 100%;
+  background: #0077ff;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 8px;
+}
+.cod-btn:hover:not(:disabled) { background: #005ad3; }
+.cod-btn:disabled,
+.cod-btn.loading {
+  background: #7ab3f5;
+  cursor: not-allowed;
+}
+
+.checkout-cancel-btn {
+  width: 100%;
+  background: #f0f0f0;
+  color: #444;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 0;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.checkout-cancel-btn:hover:not(:disabled) { background: #e0e0e0; }
+.checkout-cancel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .checkout-popup {
+    padding: 20px 16px 18px;
+    border-radius: 10px;
+  }
+  .checkout-title { font-size: 18px; }
+  .cod-btn, .checkout-cancel-btn { min-height: 44px; }
+}
+
+/* ── City Combobox ───────────────────────────────────────────────────────── */
+.city-combobox {
+  position: relative;
+  width: 100%;
+}
+
+.city-combobox--disabled {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.city-combobox__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.city-combobox__input-wrap input {
+  width: 100%;
+  padding: 9px 36px 9px 12px;
+  border: 1.5px solid #d0d7e2;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1b263b;
+  background: #fafbfc;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  cursor: pointer;
+}
+
+.city-combobox__input-wrap input:focus {
+  border-color: #0077ff;
+  box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.12);
+  background: #fff;
+}
+
+.city-combobox__input-wrap--open input {
+  border-color: #0077ff;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.12);
+  background: #fff;
+}
+
+.city-combobox__input-wrap--error input {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.city-combobox__arrow {
+  position: absolute;
+  right: 11px;
+  font-size: 13px;
+  color: #7a8fa6;
+  pointer-events: none;
+  transition: transform 0.18s;
+  line-height: 1;
+}
+
+/* Province trigger button (acts like the city text input visually) */
+.city-combobox__trigger {
+  width: 100%;
+  padding: 9px 36px 9px 12px;
+  border: 1.5px solid #d0d7e2;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1b263b;
+  background: #fafbfc;
+  outline: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  appearance: none;
+}
+
+.city-combobox__trigger:focus {
+  border-color: #0077ff;
+  box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.12);
+  background: #fff;
+}
+
+.city-combobox__trigger--placeholder {
+  color: #9aacbe;
+}
+
+.city-combobox__input-wrap--open .city-combobox__trigger {
+  border-color: #0077ff;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.12);
+  background: #fff;
+}
+
+.city-combobox__input-wrap--error .city-combobox__trigger {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.city-combobox__arrow--up {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown list ── */
+.city-combobox__list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: #fff;
+  border: 1.5px solid #0077ff;
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  scrollbar-width: thin;
+  scrollbar-color: #c8d4e3 transparent;
+}
+
+.city-combobox__list::-webkit-scrollbar {
+  width: 5px;
+}
+.city-combobox__list::-webkit-scrollbar-thumb {
+  background: #c8d4e3;
+  border-radius: 4px;
+}
+
+/* ── Option items ── */
+.city-combobox__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  font-size: 13.5px;
+  color: #1b263b;
+  cursor: pointer;
+  transition: background 0.12s;
+  user-select: none;
+}
+
+.city-combobox__option:hover,
+.city-combobox__option--active {
+  background: #eef4ff;
+  color: #0055cc;
+}
+
+.city-combobox__option--selected {
+  background: #ddeeff;
+  color: #0055cc;
+  font-weight: 600;
+}
+
+.city-combobox__option--selected.city-combobox__option--active {
+  background: #cce3ff;
+}
+
+.city-combobox__check {
+  font-size: 12px;
+  color: #0077ff;
+  font-weight: 700;
+  flex-shrink: 0;
+}
