@@ -22,7 +22,7 @@ router.get("/check-guest", async (req, res) => {
 // ── GUEST — create or update guest record ─────────────────────────────────────
 router.post("/guest", async (req, res) => {
   try {
-    const { name, email, phone, city } = req.body;
+    const { name, email, phone, province, city, address } = req.body;
     if (!email) return res.status(400).json({ message: "Email required" });
     const guestName = name?.trim() || email.split("@")[0];
 
@@ -30,12 +30,19 @@ router.post("/guest", async (req, res) => {
     if (user && !user.isGuest) return res.status(200).json({ message: "account_exists" });
 
     if (!user) {
-      user = new Contact({ name: guestName, email, phone: phone || null, city: city || null, isGuest: true, password: null });
+      user = new Contact({
+        name: guestName, email,
+        phone: phone || null, province: province || null,
+        city: city || null, address: address || null,
+        isGuest: true, password: null,
+      });
       await user.save();
     } else {
-      user.name = guestName;
-      user.phone = phone || user.phone;
-      user.city = city || user.city;
+      user.name     = guestName;
+      user.phone    = phone    || user.phone;
+      user.province = province || user.province;
+      user.city     = city     || user.city;
+      user.address  = address  || user.address;
       await user.save();
     }
 

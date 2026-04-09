@@ -5,13 +5,50 @@ const Cart = require("../models/Cart");
 const Order = require("../models/Order");
 const Contact = require("../models/contact");
 const Message = require("../models/Message");
+const { orderLimiter } = require("../middleware/security");
+
+// ── Pakistan location data (mirrors frontend) ─────────────────────────────────
+const PAKISTAN_LOCATIONS = {
+  Punjab:      ["Bahawalpur","Burewala","Chiniot","Dera Ghazi Khan","Faisalabad","Gujranwala","Gujrat","Hafizabad","Jhang","Jhelum","Kasur","Lahore","Multan","Okara","Rahim Yar Khan","Rawalpindi","Sahiwal","Sargodha","Sheikhupura","Sialkot","Vehari","Wah Cantt"],
+  Sindh:       ["Badin","Dadu","Hyderabad","Jacobabad","Karachi","Khairpur","Kotri","Larkana","Mirpur Khas","Nawabshah","Sanghar","Shikarpur","Sukkur","Tando Adam","Thatta"],
+  KPK:         ["Abbottabad","Bannu","Battagram","Charsadda","Chitral","Dera Ismail Khan","Hangu","Haripur","Kohat","Mansehra","Mardan","Mingora","Nowshera","Peshawar","Swabi"],
+  Balochistan: ["Chaman","Dera Murad Jamali","Gwadar","Hub","Kalat","Kharan","Khuzdar","Loralai","Mastung","Nushki","Panjgur","Quetta","Sibi","Turbat","Zhob"],
+  Islamabad:   ["Islamabad"],
+};
+const VALID_PROVINCES = Object.keys(PAKISTAN_LOCATIONS);
+
+/** Validate customer fields; returns array of error strings (empty = valid). */
+const validateCustomer = (c) => {
+  const errs = [];
+  if (!c?.name?.trim())     errs.push("Customer name is required.");
+  if (!c?.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email.trim()))
+    errs.push("Please enter a valid email address.");
+  if (!c?.phone?.trim()) {
+    errs.push("Phone number is required.");
+  } else {
+    const digits = c.phone.trim().replace(/[\s+]/g, "");
+    if (!/^03\d{9}$/.test(digits) && !/^923\d{9}$/.test(digits))
+      errs.push("Please enter a valid Pakistani phone number.");
+  }
+  if (!c?.province || !VALID_PROVINCES.includes(c.province))
+    errs.push("Please select a valid province.");
+  if (!c?.city?.trim() || c.city.trim().length < 2)
+    errs.push("Please enter or select a city.");
+  if (!c?.address?.trim() || c.address.trim().length < 5)
+    errs.push("Please enter a complete address.");
+  return errs;
+};
 
 // ── POST /api/orders/complete-payment ─────────────────────────────────────────
-router.post("/complete-payment", async (req, res) => {
+router.post("/complete-payment", orderLimiter, async (req, res) => {
   const { userId, customer, items: bodyItems, total: bodyTotal } = req.body;
 
   if (!userId || !customer)
     return res.status(400).json({ error: "Missing required fields" });
+
+  const validationErrors = validateCustomer(customer);
+  if (validationErrors.length)
+    return res.status(422).json({ error: validationErrors[0], errors: validationErrors });
 
   try {
     let cartItems = null;
@@ -70,16 +107,31 @@ router.post("/complete-payment", async (req, res) => {
       try {
         const guestEmail = customer.email.trim().toLowerCase();
         const guestName  = customer.name?.trim() || guestEmail.split("@")[0];
-        const fullAccount = await Contact.findOne({ email: guestEmail, isGuest: false }).lean();
-        if (!fullAccount) {
-          await Contact.findOneAndUpdate(
-            { email: guestEmail },
-            {
-              $setOnInsert: { email: guestEmail, isGuest: true, password: null, role: "user" },
-              $set: { name: guestName, phone: customer.phone || null, city: customer.address || null },
-            },
-            { upsert: true, new: true }
-          );
+
+        let guestContact = await Contact.findOne({ email: guestEmail });
+
+        if (guestContact && !guestContact.isGuest) {
+          // Full account exists — skip, don't overwrite
+        } else if (guestContact) {
+          // Update existing guest record with latest order info
+          guestContact.name     = guestName;
+          guestContact.phone    = customer.phone    || guestContact.phone;
+          guestContact.province = customer.province || guestContact.province;
+          guestContact.city     = customer.city     || guestContact.city;
+          guestContact.address  = customer.address  || guestContact.address;
+          await guestContact.save();
+        } else {
+          // Create new guest contact
+          await Contact.create({
+            name:     guestName,
+            email:    guestEmail,
+            phone:    customer.phone    || null,
+            province: customer.province || null,
+            city:     customer.city     || null,
+            address:  customer.address  || null,
+            isGuest:  true,
+            password: null,
+          });
         }
       } catch (err) {
         console.error("[GUEST] Failed to save guest contact:", err.message);

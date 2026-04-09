@@ -82,13 +82,16 @@ export const validateEmail = (email) => {
 export const validatePhone = (phone) => {
   if (!phone?.trim()) return "Phone number is required.";
   const trimmed = phone.trim();
-  if (/[^0-9\s\-+]/.test(trimmed)) return "Phone number contains invalid characters.";
-  const digits = trimmed.replace(/[\s\-+]/g, "");
+  // Reject anything that isn't digits, spaces, or a leading +
+  if (/[^0-9\s+]/.test(trimmed))
+    return "Please enter a valid Pakistani phone number (e.g. 03001234567 or +923001234567).";
+  const digits = trimmed.replace(/[\s+]/g, "");
   const ok =
-    /^03\d{9}$/.test(digits) ||
-    /^92\d{10}$/.test(digits) ||
-    /^3\d{9}$/.test(digits);
-  return ok ? null : "Please enter a valid Pakistani phone number (e.g. 0333-8214000).";
+    /^03\d{9}$/.test(digits) ||   // 03xxxxxxxxx  (11 digits)
+    /^923\d{9}$/.test(digits);     // 923xxxxxxxxx (12 digits, no +)
+  return ok
+    ? null
+    : "Please enter a valid Pakistani phone number (e.g. 03001234567 or +923001234567).";
 };
 
 export const validateName = (name) => {

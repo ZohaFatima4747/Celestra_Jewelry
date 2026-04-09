@@ -14,10 +14,12 @@ const OrderSchema = new mongoose.Schema({
   ],
   total: { type: Number, required: true },
   customer: {
-    name: { type: String, required: true },
-    email: { type: String, required: true },
-    phone: { type: String, required: true },
-    address: { type: String, required: true }
+    name:     { type: String, required: true },
+    email:    { type: String, required: true },
+    phone:    { type: String, required: true },
+    province: { type: String, required: true },
+    city:     { type: String, required: true },
+    address:  { type: String, required: true },
   },
   status: { type: String, default: 'pending' }, // pending, completed, cancelled
   createdAt: { type: Date, default: Date.now }
