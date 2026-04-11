@@ -1,4 +1,3 @@
-const axios = require("axios");
 const express = require("express");
 const router = express.Router();
 const Cart = require("../models/Cart");
@@ -159,17 +158,6 @@ router.post("/complete-payment", orderLimiter, async (req, res) => {
       });
     } catch (err) {
       console.error("Failed to save notifications:", err.message);
-    }
-
-    // Webhook notification (non-blocking)
-    if (process.env.N8N_WEBHOOK_URL) {
-      axios.post(process.env.N8N_WEBHOOK_URL, {
-        customerName: customer.name,
-        customerEmail: customer.email,
-        product: cartItems.map((i) => i.product.name).join(", "),
-        amount: order.total,
-        orderId: order._id,
-      }).catch((err) => console.error("Webhook failed:", err.message));
     }
 
     // Clear DB cart
