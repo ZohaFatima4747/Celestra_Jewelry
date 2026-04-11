@@ -131,12 +131,15 @@ router.post("/login", async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    await Login.create({ userId: user._id, token, refreshToken, name: user.name, email: user.email, role: user.role });
+    // Remove any stale login sessions for this user before creating a new one
+    await Login.deleteMany({ userId: user._id });
+    await Login.create({ userId: user._id, token, refreshToken, name: user.name || user.email, email: user.email, role: user.role });
     await mergeGuestCart(user._id, guestCart);
 
     res.status(200).json({ message: "Login successful", token, refreshToken, userId: user._id });
-  } catch {
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Server error", detail: err.message });
   }
 });
 
@@ -187,14 +190,17 @@ router.get("/user/:id", authMiddleware, async (req, res) => {
 router.put("/user/:id", authMiddleware, async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const updateData = { name, email };
+    const updateData = {};
+    if (name && name.trim()) updateData.name = name.trim();
+    if (email) updateData.email = email;
     if (password) updateData.password = await bcrypt.hash(password, 10);
 
-    const updated = await Contact.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    const updated = await Contact.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true });
     if (!updated) return res.status(404).json({ message: "User not found" });
     res.status(200).json({ message: "User updated successfully", user: updated });
-  } catch {
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    console.error("Update user error:", err);
+    res.status(500).json({ message: "Server error", detail: err.message });
   }
 });
 

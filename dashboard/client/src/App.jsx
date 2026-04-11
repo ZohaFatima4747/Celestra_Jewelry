@@ -11,6 +11,7 @@ import Sales from './pages/Sales';
 import Alerts from './pages/Alerts';
 import Settings from './pages/Settings';
 import Notifications from './pages/Notifications';
+import ContactMessages from './pages/ContactMessages';
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="alerts" element={<Alerts />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="contact-messages" element={<ContactMessages />} />
           </Route>
         </Routes>
       </BrowserRouter>

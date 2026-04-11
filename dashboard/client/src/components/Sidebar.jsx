@@ -11,6 +11,7 @@ const links = [
   { to: '/dashboard/customers', label: '👥 Customers' },
   { to: '/dashboard/sales', label: '💰 Sales & Finance' },
   { to: '/dashboard/alerts', label: '⚠️ Alerts' },
+  { to: '/dashboard/contact-messages', label: '✉️ Contact Messages' },
   { to: '/dashboard/notifications', label: '🔔 Notifications', badge: true },
   { to: '/dashboard/settings', label: '⚙️ Settings' },
 ];
