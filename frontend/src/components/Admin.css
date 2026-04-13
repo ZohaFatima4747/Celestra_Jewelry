@@ -35,7 +35,7 @@
 
 /* ── SIDEBAR ─────────────────────────────────────── */
 .ad-sidebar {
-  width: 240px;
+  width: 260px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -65,17 +65,21 @@
   gap: 8px;
   padding: 0 8px;
   margin-bottom: 36px;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .ad-sb-icon {
   font-size: 22px;
+  flex-shrink: 0;
 }
 
 .ad-sb-brand {
   font-family: "Syne", sans-serif;
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.5px;
+  white-space: nowrap;
 }
 
 .dark .ad-sb-brand {
@@ -95,6 +99,8 @@
   border-radius: 20px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Section label */
@@ -223,14 +229,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
   gap: 16px;
+  border-bottom: 1px solid;
+}
+
+.dark .ad-topbar {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+.light .ad-topbar {
+  border-color: rgba(0, 0, 0, 0.07);
 }
 
 .ad-topbar-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .ad-menu-btn {
@@ -260,9 +275,10 @@
 
 .ad-page-title {
   font-family: "Syne", sans-serif;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 800;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.75px;
+  line-height: 1.15;
   margin: 0;
 }
 
@@ -270,18 +286,21 @@
   color: #fff;
 }
 .light .ad-page-title {
-  color: #1a1410;
+  color: #111;
 }
 
 .ad-page-sub {
-  font-size: 13px;
-  margin-top: 3px;
+  font-size: 13.5px;
+  font-weight: 400;
+  margin-top: 5px;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
 }
 .dark .ad-page-sub {
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.45);
 }
 .light .ad-page-sub {
-  color: rgba(0, 0, 0, 0.4);
+  color: rgba(0, 0, 0, 0.5);
 }
 
 /* User chip */
@@ -365,19 +384,19 @@
   .ad-menu-btn { display: block; }
   .ad-main { padding: 16px 12px; }
   .ad-content { padding: 14px; }
-  .ad-page-title { font-size: 20px; }
-  .ad-topbar { margin-bottom: 16px; }
+  .ad-page-title { font-size: 21px; letter-spacing: -0.5px; }
+  .ad-topbar { margin-bottom: 20px; padding-bottom: 16px; }
   .ad-user-chip { padding: 6px 10px; }
 }
 
 @media (max-width: 480px) {
   .ad-user-name { display: none; }
-  .ad-topbar { margin-bottom: 14px; gap: 10px; }
+  .ad-topbar { margin-bottom: 16px; padding-bottom: 14px; gap: 10px; }
   .ad-main { padding: 12px 10px; }
   .ad-content { padding: 12px; border-radius: 12px; }
   .ad-sb-item { min-height: 44px; }
-  .ad-page-title { font-size: 18px; }
-  .ad-page-sub { font-size: 12px; }
+  .ad-page-title { font-size: 19px; letter-spacing: -0.4px; }
+  .ad-page-sub { font-size: 12.5px; }
 }
 
 @media (max-width: 360px) {
