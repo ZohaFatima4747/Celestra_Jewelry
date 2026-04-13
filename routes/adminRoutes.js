@@ -7,6 +7,7 @@ const Message = require("../models/Message");
 const { adminAuth } = require("../middleware/auth");
 const sendOrderShipped   = require("../utils/sendOrderShipped");
 const sendOrderDelivered = require("../utils/sendOrderDelivered");
+const sendOrderCancelled = require("../utils/sendOrderCancelled");
 
 // ── STATS ─────────────────────────────────────────
 // GET /api/admin/stats
@@ -119,6 +120,10 @@ router.put("/orders/:orderId", adminAuth, async (req, res) => {
     } else if (status === "delivered") {
       sendOrderDelivered(order).catch((err) =>
         console.error("[EMAIL] Delivered notification failed:", err.message)
+      );
+    } else if (status === "cancelled") {
+      sendOrderCancelled(order).catch((err) =>
+        console.error("[EMAIL] Cancelled notification failed:", err.message)
       );
     }
 

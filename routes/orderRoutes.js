@@ -6,6 +6,7 @@ const Contact = require("../models/contact");
 const Message = require("../models/Message");
 const { orderLimiter } = require("../middleware/security");
 const sendOrderConfirmation = require("../utils/sendOrderConfirmation");
+const sendOrderCancelled    = require("../utils/sendOrderCancelled");
 
 // ── Pakistan location data (mirrors frontend) ─────────────────────────────────
 const PAKISTAN_LOCATIONS = {
@@ -211,6 +212,11 @@ router.put("/:orderId/status", async (req, res) => {
     } catch (err) {
       console.error("Failed to save cancellation notification:", err.message);
     }
+
+    // Send cancellation email (non-blocking)
+    sendOrderCancelled(order).catch((err) =>
+      console.error("[EMAIL] Cancelled notification failed:", err.message)
+    );
 
     res.json({ success: true, order: updated });
   } catch (err) {
