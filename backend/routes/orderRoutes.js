@@ -5,6 +5,7 @@ const Order = require("../models/Order");
 const Contact = require("../models/contact");
 const Message = require("../models/Message");
 const { orderLimiter } = require("../middleware/security");
+const sendOrderConfirmation = require("../utils/sendOrderConfirmation");
 
 // ── Pakistan location data (mirrors frontend) ─────────────────────────────────
 const PAKISTAN_LOCATIONS = {
@@ -92,6 +93,11 @@ router.post("/complete-payment", orderLimiter, async (req, res) => {
     });
 
     await order.save();
+
+    // Send order confirmation email (non-blocking)
+    sendOrderConfirmation(order).catch((err) =>
+      console.error("[EMAIL] Order confirmation failed:", err.message)
+    );
 
     // Save guest contact if applicable
     const isGuestPrefix = userId.startsWith("guest_");
@@ -185,7 +191,7 @@ router.put("/:orderId/status", async (req, res) => {
     const order = await Order.findById(req.params.orderId);
     if (!order) return res.status(404).json({ error: "Order not found" });
 
-    if (order.status !== "pending COD" && order.status !== "pending")
+    if (order.status !== "pending COD")
       return res.status(400).json({ error: "Only pending orders can be cancelled." });
 
     const updated = await Order.findByIdAndUpdate(

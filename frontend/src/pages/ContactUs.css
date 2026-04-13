@@ -93,13 +93,21 @@
   padding: 11px 14px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 16px;
   font-family: "Inter", sans-serif;
   color: var(--text);
   background: var(--bg);
   transition: border-color 0.15s;
   outline: none;
   resize: vertical;
+}
+
+/* Scale down visually on desktop without triggering iOS zoom */
+@media (min-width: 601px) {
+  .cu-field input,
+  .cu-field textarea {
+    font-size: 14px;
+  }
 }
 
 .cu-field input:focus,
@@ -137,9 +145,24 @@
 
 /* Mobile */
 @media (max-width: 600px) {
+  .cu-page { padding: 24px 16px; align-items: flex-start; }
   .cu-card {
-    padding: 32px 20px;
+    padding: 28px 18px;
     border-radius: 12px;
   }
   .cu-title { font-size: 28px; }
+  .cu-subtitle { font-size: 13px; margin-bottom: 24px; }
+}
+
+@media (max-width: 400px) {
+  .cu-page { padding: 16px 12px; }
+  .cu-card { padding: 24px 14px; }
+  .cu-title { font-size: 24px; }
+  .cu-btn { min-height: 44px; }
+}
+
+@media (max-width: 360px) {
+  .cu-card { padding: 20px 12px; }
+  .cu-title { font-size: 22px; }
+  .cu-form { gap: 16px; }
 }

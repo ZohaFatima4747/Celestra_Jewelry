@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import api from '../utils/api';
 import './Orders.css';
 
-const STATUSES = ['pending', 'pending COD', 'shipped', 'delivered', 'completed', 'cancelled'];
+const STATUSES = ['pending COD', 'shipped', 'delivered', 'cancelled'];
 
 const statusColor = {
-  pending: '#f39c12', 'pending COD': '#e67e22',
-  shipped: '#3498db', delivered: '#9b59b6',
-  completed: '#2ecc71', cancelled: '#e74c3c',
+  'pending COD': '#e67e22',
+  shipped:       '#3498db',
+  delivered:     '#2ecc71',
+  cancelled:     '#e74c3c',
 };
 
 function OrderDetailModal({ order, onClose, onStatusChange }) {

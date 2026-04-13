@@ -314,4 +314,13 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
+  .uw-header { flex-wrap: wrap; gap: 8px; }
+  .uw-btn-cart { font-size: 11px; padding: 8px 8px; }
+}
+
+@media (max-width: 360px) {
+  .uw-grid { gap: 8px; }
+  .uw-card-body { padding: 10px 10px 6px; }
+  .uw-card-actions { padding: 8px 10px 12px; gap: 6px; }
+  .uw-title { font-size: 16px; }
 }

@@ -206,6 +206,38 @@
   line-height: 1.5;
 }
 
+/* Password input wrapper */
+.cf-input-wrap {
+  position: relative;
+  width: 100%;
+}
+.cf-input-wrap input {
+  width: 100%;
+  padding-right: 52px;
+  box-sizing: border-box;
+}
+.cf-eye-btn {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  width: auto !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  min-height: unset;
+  min-width: unset;
+  transition: color 0.15s;
+}
+.cf-eye-btn:hover { color: var(--gold) !important; background: none !important; opacity: 1; }
+
 /* Mobile */
 @media (max-width: 600px) {
   .cf-card {
@@ -216,10 +248,17 @@
     overflow-y: auto;
   }
   .cf-field input { font-size: 16px; }
+  .cf-submit { min-height: 44px; }
 }
 @media (max-width: 480px) {
-  .cf-card { max-width: 100%; border-radius: 16px 16px 0 0; padding: 20px 18px 28px; }
+  .cf-card { max-width: 100%; border-radius: 16px 16px 0 0; padding: 20px 16px 28px; }
   .cf-field input { font-size: 16px; }
+  .cf-title { font-size: 20px; }
+}
+@media (max-width: 360px) {
+  .cf-card { padding: 18px 14px 24px; }
+  .cf-title { font-size: 18px; }
+  .cf-form { gap: 12px; }
 }
 
 /* ── Legacy classes (kept for safety) ── */
@@ -253,4 +292,7 @@
   .login-container { padding: 0; align-items: flex-end; }
   .login-box { border-radius: 16px 16px 0 0; max-width: 100%; padding: 24px 18px 32px; }
   .input-group input { font-size: 16px; }
+}
+@media (max-width: 360px) {
+  .login-box { padding: 20px 14px 28px; }
 }

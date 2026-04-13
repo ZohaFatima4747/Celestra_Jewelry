@@ -199,13 +199,26 @@
 .checkout-cancel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+  .checkout-overlay { padding: 0; align-items: flex-end; }
   .checkout-popup {
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
     padding: 20px 16px 18px;
-    border-radius: 10px;
+    max-height: 95vh;
   }
+  .checkout-field input,
+  .checkout-field select,
+  .checkout-field textarea,
+  .city-custom-input,
+  .city-combobox__input-wrap input,
+  .city-combobox__trigger { font-size: 16px; }
   .checkout-title { font-size: 18px; }
   .cod-btn, .checkout-cancel-btn { min-height: 44px; }
+}
+@media (max-width: 480px) {
+  .checkout-popup { padding: 18px 14px 16px; }
+  .checkout-form { gap: 12px; }
 }
 
 /* ── City Combobox ───────────────────────────────────────────────────────── */

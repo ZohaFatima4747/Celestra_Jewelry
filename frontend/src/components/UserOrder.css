@@ -55,6 +55,7 @@
 .status-badge.green  { background-color: #5cb85c; }
 .status-badge.red    { background-color: #d9534f; }
 .status-badge.yellow { background-color: #f0ad4e; }
+.status-badge.blue   { background-color: #3498db; }
 .status-badge.gray   { background-color: #777; }
 
 .status-badge:hover {
@@ -164,6 +165,19 @@
 
   .filter-btn { min-height: 44px; }
   .status-badge { font-size: 0.85rem; padding: 5px 10px; }
+}
+
+@media (max-width: 480px) {
+  .user-orders-container { padding: 12px; }
+  .user-orders-container tr { padding: 14px; }
+  .order-cancel-btn, .receipt-btn { width: 100%; }
+  .order-filters { gap: 8px; }
+  .filter-btn { padding: 8px 12px; font-size: 0.82rem; }
+}
+
+@media (max-width: 360px) {
+  .user-orders-container { padding: 8px; }
+  .user-orders-container td { font-size: 0.82rem; }
 }
 
 /* Loader */

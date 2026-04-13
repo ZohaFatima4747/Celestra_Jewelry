@@ -4,8 +4,8 @@ import { getUserId, getUserEmail } from "../utils/auth";
 import "./MyOrders.css";
 
 const STATUS_CONFIG = {
-  completed: {
-    label: "Completed",
+  delivered: {
+    label: "Delivered",
     color: "#22c55e",
     bg: "rgba(34,197,94,0.1)",
     border: "rgba(34,197,94,0.25)",
@@ -18,22 +18,15 @@ const STATUS_CONFIG = {
     border: "rgba(245,158,11,0.25)",
     icon: "⏳",
   },
-  pending: {
-    label: "Pending",
-    color: "#f59e0b",
-    bg: "rgba(245,158,11,0.1)",
-    border: "rgba(245,158,11,0.25)",
-    icon: "⏳",
+  shipped: {
+    label: "Shipped",
+    color: "#3b82f6",
+    bg: "rgba(59,130,246,0.1)",
+    border: "rgba(59,130,246,0.25)",
+    icon: "🚚",
   },
   cancelled: {
     label: "Cancelled",
-    color: "#ef4444",
-    bg: "rgba(239,68,68,0.1)",
-    border: "rgba(239,68,68,0.25)",
-    icon: "✕",
-  },
-  failed: {
-    label: "Failed",
     color: "#ef4444",
     bg: "rgba(239,68,68,0.1)",
     border: "rgba(239,68,68,0.25)",
@@ -115,11 +108,7 @@ const MyOrders = ({ isDark }) => {
   const filtered =
     filter === "all"
       ? orders
-      : orders.filter(
-          (o) =>
-            o.status === filter ||
-            (filter === "pending" && o.status === "pending COD"),
-        );
+      : orders.filter((o) => o.status === filter);
 
   if (loading)
     return (
@@ -139,17 +128,19 @@ const MyOrders = ({ isDark }) => {
         </div>
         <div className="mo-stat">
           <strong style={{ color: "#22c55e" }}>
-            {orders.filter((o) => o.status === "completed").length}
+            {orders.filter((o) => o.status === "delivered").length}
           </strong>
-          <span>Completed</span>
+          <span>Delivered</span>
+        </div>
+        <div className="mo-stat">
+          <strong style={{ color: "#3b82f6" }}>
+            {orders.filter((o) => o.status === "shipped").length}
+          </strong>
+          <span>Shipped</span>
         </div>
         <div className="mo-stat">
           <strong style={{ color: "#f59e0b" }}>
-            {
-              orders.filter(
-                (o) => o.status === "pending COD" || o.status === "pending",
-              ).length
-            }
+            {orders.filter((o) => o.status === "pending COD").length}
           </strong>
           <span>Pending</span>
         </div>
@@ -163,7 +154,7 @@ const MyOrders = ({ isDark }) => {
           <strong style={{ color: "#a78bfa" }}>
             Rs{" "}
             {orders
-              .filter((o) => o.status === "completed")
+              .filter((o) => o.status === "delivered")
               .reduce((s, o) => s + o.total, 0)
               .toLocaleString()}
           </strong>
@@ -173,15 +164,13 @@ const MyOrders = ({ isDark }) => {
 
       {/* Filter Pills */}
       <div className="mo-filters">
-        {["all", "completed", "pending", "cancelled"].map((f) => (
+        {["all", "pending COD", "shipped", "delivered", "cancelled"].map((f) => (
           <button
             key={f}
             className={`mo-filter-btn ${filter === f ? "active" : ""}`}
             onClick={() => setFilter(f)}
           >
-            {f === "all"
-              ? "All Orders"
-              : f.charAt(0).toUpperCase() + f.slice(1)}
+            {f === "all" ? "All Orders" : f === "pending COD" ? "Pending COD" : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
       </div>
@@ -315,8 +304,7 @@ const MyOrders = ({ isDark }) => {
                     </div>
 
                     {/* Cancel */}
-                    {(order.status === "pending COD" ||
-                      order.status === "pending") && (
+                    {order.status === "pending COD" && (
                       <div className="mo-actions">
                         <button
                           className="mo-cancel-btn"

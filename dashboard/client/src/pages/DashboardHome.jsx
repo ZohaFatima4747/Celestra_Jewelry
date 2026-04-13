@@ -49,7 +49,7 @@ export default function DashboardHome() {
       {/* Row 1 — 5 cards */}
       <div className="stat-grid stat-grid--5">
         <StatCard badge="All time"  badgeDot="#4361ee" value={stats.totalOrders}                          label="Total orders"   accent="#4361ee" icon="⊞" />
-        <StatCard badge="Done"      badgeDot="#2ecc71" value={stats.completedOrders}                      label="Completed"      accent="#2ecc71" icon="✓" />
+        <StatCard badge="Done"      badgeDot="#2ecc71" value={stats.completedOrders}                      label="Delivered"      accent="#2ecc71" icon="✓" />
         <StatCard badge="Active"    badgeDot="#f39c12" value={stats.pendingOrders}                        label="Pending"        accent="#f39c12" icon="≡" />
         <StatCard badge="Void"      badgeDot="#e74c3c" value={stats.cancelledOrders}                      label="Cancelled"      accent="#e74c3c" icon="✕" />
         <StatCard badge="PKR"       badgeDot="#9b59b6" value={`PKR ${stats.totalRevenue?.toLocaleString()}`} label="Revenue"     accent="#9b59b6" icon="₨" />

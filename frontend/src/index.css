@@ -41,3 +41,10 @@ body {
 img { max-width: 100%; display: block; }
 button { cursor: pointer; font-family: "Inter", sans-serif; }
 h1, h2, h3 { font-family: "Cormorant Garamond", serif; font-weight: 600; margin: 0; }
+
+/* Prevent iOS auto-zoom on any input/select/textarea across the entire app */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}

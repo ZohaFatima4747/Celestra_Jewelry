@@ -245,7 +245,7 @@
   .navbar-announce-center { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .navbar-announce-right { display: none; }
   .cart-label { display: none; }
-  .navbar-search input { width: 110px; font-size: 12px; }
+  .navbar-search input { width: 110px; font-size: 16px; }
   .navbar-search input:focus { width: 140px; }
   .search-dropdown { width: 230px; right: 0; left: auto; }
   .cf-overlay { align-items: flex-end; padding: 0; }
@@ -255,7 +255,7 @@
 /* Small mobile ≤400px */
 @media (max-width: 400px) {
   .navbar-inner { padding: 0 10px; height: 56px; gap: 6px; }
-  .navbar-search input { width: 85px; font-size: 11px; padding-left: 26px; }
+  .navbar-search input { width: 85px; font-size: 16px; padding-left: 26px; }
   .navbar-search input:focus { width: 105px; }
   .search-dropdown { width: 200px; }
   .nav-cart-btn { padding: 7px 10px; }
@@ -265,7 +265,7 @@
 /* Galaxy Fold / very small ≤340px */
 @media (max-width: 340px) {
   .navbar-inner { padding: 0 8px; height: 52px; gap: 4px; }
-  .navbar-search input { width: 70px; font-size: 11px; }
+  .navbar-search input { width: 70px; font-size: 16px; }
   .navbar-search input:focus { width: 88px; }
   .search-dropdown { width: 180px; }
   .nav-cart-btn { padding: 6px 8px; }

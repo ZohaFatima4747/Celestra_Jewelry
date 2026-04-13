@@ -513,4 +513,20 @@
   .mo-filter-btn { min-height: 36px; padding: 6px 12px; }
   .mo-cancel-btn { min-height: 44px; width: 100%; }
   .mo-actions { justify-content: stretch; }
+  .mo-detail { padding: 14px 14px 16px; }
+}
+
+@media (max-width: 400px) {
+  .mo-row { padding: 10px 12px; gap: 8px; }
+  .mo-stat { min-width: 60px; }
+  .mo-stat strong { font-size: 14px; }
+  .mo-icon { width: 34px; height: 34px; font-size: 15px; }
+  .mo-total { font-size: 13px; }
+}
+
+@media (max-width: 360px) {
+  .mo-summary { flex-direction: row; flex-wrap: wrap; }
+  .mo-stat { flex: 1 1 calc(50% - 4px); }
+  .mo-filters { gap: 6px; }
+  .mo-filter-btn { font-size: 11px; padding: 5px 10px; }
 }

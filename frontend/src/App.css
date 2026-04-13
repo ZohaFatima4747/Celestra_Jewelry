@@ -69,7 +69,7 @@
 .user-details-form textarea {
   width: 100%;
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: 16px;
   border-radius: 4px;
   border: 1px solid var(--border);
   background: var(--lavender);
@@ -111,13 +111,16 @@
   }
   .user-details-form input,
   .user-details-form textarea { font-size: 16px; }
+  .cod-btn, .cancel-btn { min-height: 44px; }
 }
 
 @media (max-width: 480px) {
-  .payment-overlay { padding: 0; align-items: flex-end; }
-  .payment-popup { max-width: 100%; max-height: 95vh; border-radius: 12px 12px 0 0; padding: 24px 16px; }
-  .user-details-form input,
-  .user-details-form textarea { font-size: 16px; }
+  .payment-popup { padding: 20px 14px; }
+  .payment-popup h2 { font-size: 18px; }
+}
+
+@media (max-width: 360px) {
+  .payment-popup { padding: 18px 12px; }
 }
 
 /* Loader */

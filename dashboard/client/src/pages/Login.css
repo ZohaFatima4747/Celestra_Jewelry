@@ -33,7 +33,7 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   margin-bottom: 14px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   box-sizing: border-box;
   outline: none;
   transition: border 0.2s;
@@ -54,7 +54,53 @@
 .login-card button:hover:not(:disabled) { background: #b8935a; }
 .login-card button:disabled { opacity: 0.6; cursor: not-allowed; }
 
+.login-input-wrap {
+  position: relative;
+  width: 100%;
+  margin-bottom: 14px;
+}
+.login-input-wrap input {
+  width: 100%;
+  margin-bottom: 0;
+  padding-right: 56px;
+  box-sizing: border-box;
+}
+.login-eye-btn {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  /* reset inherited .login-card button styles */
+  width: auto !important;
+  padding: 0 !important;
+  background: none !important;
+  color: #aaa !important;
+  border: none;
+  border-radius: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  cursor: pointer;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+.login-eye-btn:hover:not(:disabled) {
+  background: none !important;
+  color: #555 !important;
+  opacity: 1;
+}
+
 @media (max-width: 480px) {
   .login-card { padding: 28px 20px; }
   .login-card h1 { font-size: 1.3rem; }
+  .login-card input { min-height: 44px; }
+  .login-card button { min-height: 44px; }
+}
+
+@media (max-width: 360px) {
+  .login-card { padding: 24px 16px; }
+  .login-card h1 { font-size: 1.2rem; }
+  .login-page { padding: 12px; }
 }

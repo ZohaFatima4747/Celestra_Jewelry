@@ -5,6 +5,8 @@ const Contact = require("../models/contact");
 const Product = require("../models/Product");
 const Message = require("../models/Message");
 const { adminAuth } = require("../middleware/auth");
+const sendOrderShipped   = require("../utils/sendOrderShipped");
+const sendOrderDelivered = require("../utils/sendOrderDelivered");
 
 // ── STATS ─────────────────────────────────────────
 // GET /api/admin/stats
@@ -14,12 +16,12 @@ router.get("/stats", adminAuth, async (req, res) => {
     const allUsers  = await Contact.find({});
 
     const totalRevenue = allOrders
-      .filter(o => o.status === "completed")
+      .filter(o => o.status === "delivered")
       .reduce((sum, o) => sum + o.total, 0);
 
-    const totalOrders    = allOrders.length;
-    const completedOrders = allOrders.filter(o => o.status === "completed").length;
-    const pendingOrders   = allOrders.filter(o => o.status === "pending COD" || o.status === "pending").length;
+    const totalOrders     = allOrders.length;
+    const completedOrders = allOrders.filter(o => o.status === "delivered").length;
+    const pendingOrders   = allOrders.filter(o => o.status === "pending COD" || o.status === "shipped").length;
     const cancelledOrders = allOrders.filter(o => o.status === "cancelled").length;
     const totalUsers      = allUsers.filter(u => u.role !== "admin").length;
 
@@ -33,7 +35,7 @@ router.get("/stats", adminAuth, async (req, res) => {
 
       const dayOrders = allOrders.filter(o => {
         const created = new Date(o.createdAt);
-        return created >= dayStart && created <= dayEnd && o.status === "completed";
+        return created >= dayStart && created <= dayEnd && o.status === "delivered";
       });
 
       last7.push({
@@ -73,7 +75,7 @@ router.get("/orders", adminAuth, async (req, res) => {
 // PUT /api/admin/orders/:orderId
 router.put("/orders/:orderId", adminAuth, async (req, res) => {
   const { status } = req.body;
-  const allowed = ["pending", "pending COD", "shipped", "delivered", "completed", "cancelled"];
+  const allowed = ["pending COD", "shipped", "delivered", "cancelled"];
   if (!allowed.includes(status))
     return res.status(400).json({ message: "Invalid status" });
 
@@ -85,30 +87,39 @@ router.put("/orders/:orderId", adminAuth, async (req, res) => {
     );
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // Fire notifications on completed
-    if (status === "completed") {
+    // Fire notifications on delivered
+    if (status === "delivered") {
       const orderId = order._id;
       const shortId = `#${String(orderId).slice(-8).toUpperCase()}`;
       try {
-        // Customer notification
         await Message.create({
           userId: order.sessionId,
           title: "Order Delivered 🎉",
-          body: `Your order ${shortId} has been completed and delivered. Thank you for shopping with us!`,
+          body: `Your order ${shortId} has been delivered. Thank you for shopping with us!`,
           orderId,
           type: "status_update",
         });
-        // Admin notification
         await Message.create({
           userId: "admin",
-          title: "Order Marked as Completed ✅",
-          body: `Order ${shortId} for ${order.customer?.name || "customer"} has been marked as completed. Total: PKR ${order.total?.toLocaleString()}`,
+          title: "Order Marked as Delivered ✅",
+          body: `Order ${shortId} for ${order.customer?.name || "customer"} has been marked as delivered. Total: PKR ${order.total?.toLocaleString()}`,
           orderId,
           type: "status_update",
         });
       } catch (msgErr) {
-        console.error("Failed to save completion notifications:", msgErr.message);
+        console.error("Failed to save delivery notifications:", msgErr.message);
       }
+    }
+
+    // Status-based email triggers (non-blocking)
+    if (status === "shipped") {
+      sendOrderShipped(order).catch((err) =>
+        console.error("[EMAIL] Shipped notification failed:", err.message)
+      );
+    } else if (status === "delivered") {
+      sendOrderDelivered(order).catch((err) =>
+        console.error("[EMAIL] Delivered notification failed:", err.message)
+      );
     }
 
     res.json({ success: true, order });
@@ -204,7 +215,7 @@ router.delete("/products/:productId", adminAuth, async (req, res) => {
 // GET /api/admin/sales
 router.get("/sales", adminAuth, async (req, res) => {
   try {
-    const orders = await Order.find({ status: "completed" });
+    const orders = await Order.find({ status: "delivered" });
 
     // Monthly revenue for last 6 months
     const monthly = {};
@@ -231,7 +242,7 @@ router.get("/sales", adminAuth, async (req, res) => {
     const allOrders = await Order.find({});
     const paymentSummary = { COD: 0, Online: 0 };
     allOrders.forEach((o) => {
-      if (o.status === "pending COD" || o.status === "pending") paymentSummary.COD += o.total;
+      if (o.status === "pending COD" || o.status === "shipped") paymentSummary.COD += o.total;
       else paymentSummary.Online += o.total;
     });
 
@@ -249,7 +260,7 @@ router.get("/sales", adminAuth, async (req, res) => {
 router.get("/alerts", adminAuth, async (req, res) => {
   try {
     const lowStock = await Product.find({ stock: { $lte: 5 } }).select("name stock category");
-    const pendingOrders = await Order.find({ status: { $in: ["pending", "pending COD"] } })
+    const pendingOrders = await Order.find({ status: { $in: ["pending COD", "shipped"] } })
       .select("customer.name total createdAt status")
       .sort({ createdAt: -1 })
       .limit(20);

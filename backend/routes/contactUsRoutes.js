@@ -216,6 +216,26 @@ router.get("/", adminAuth, async (req, res) => {
   }
 });
 
+// ── GET /api/contact-us/unread-count — unread badge count (admin only) ────────
+router.get("/unread-count", adminAuth, async (req, res) => {
+  try {
+    const count = await ContactMessage.countDocuments({ isRead: false });
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch unread count." });
+  }
+});
+
+// ── POST /api/contact-us/mark-read — mark all messages as read (admin only) ───
+router.post("/mark-read", adminAuth, async (req, res) => {
+  try {
+    await ContactMessage.updateMany({ isRead: false }, { isRead: true });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to mark messages as read." });
+  }
+});
+
 // ── POST /api/contact-us/reply — admin sends a reply to a user ────────────────
 router.post("/reply", adminAuth, async (req, res) => {
   const { id, name, email, subject, originalMessage, replyMessage } = req.body;

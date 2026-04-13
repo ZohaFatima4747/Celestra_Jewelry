@@ -6,8 +6,37 @@
 .error-msg { background: #fff0f0; color: #c0392b; border: 1px solid #f5c6cb; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.88rem; }
 .settings-form { display: flex; flex-direction: column; gap: 14px; }
 .settings-form label { display: flex; flex-direction: column; gap: 5px; font-size: 0.85rem; color: #555; font-weight: 600; }
-.settings-form input { padding: 10px 13px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; outline: none; width: 100%; }
+.settings-form input { padding: 10px 13px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none; width: 100%; }
 .settings-form input:focus { border-color: #c9a96e; }
+
+.settings-input-wrap {
+  position: relative;
+  width: 100%;
+}
+.settings-input-wrap input {
+  width: 100%;
+  padding-right: 56px;
+  box-sizing: border-box;
+}
+.settings-eye-btn {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  width: auto !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.settings-eye-btn:hover { color: #c9a96e !important; background: none !important; opacity: 1; }
 .settings-form button { background: #c9a96e; color: #fff; border: none; padding: 11px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 4px; width: 100%; }
 .settings-form button:hover:not(:disabled) { background: #b8935a; }
 .settings-form button:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -18,4 +47,5 @@
 @media (max-width: 640px) {
   .page-title { font-size: 1.2rem; }
   .settings-card { padding: 20px; }
+  .settings-form input { font-size: 16px; }
 }

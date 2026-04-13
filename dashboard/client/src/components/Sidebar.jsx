@@ -11,7 +11,7 @@ const links = [
   { to: '/dashboard/customers', label: '👥 Customers' },
   { to: '/dashboard/sales', label: '💰 Sales & Finance' },
   { to: '/dashboard/alerts', label: '⚠️ Alerts' },
-  { to: '/dashboard/contact-messages', label: '✉️ Contact Messages' },
+  { to: '/dashboard/contact-messages', label: '✉️ Contact Messages', contactBadge: true },
   { to: '/dashboard/notifications', label: '🔔 Notifications', badge: true },
   { to: '/dashboard/settings', label: '⚙️ Settings' },
 ];
@@ -20,6 +20,7 @@ export default function Sidebar({ open, onClose }) {
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadContactCount, setUnreadContactCount] = useState(0);
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -30,6 +31,18 @@ export default function Sidebar({ open, onClose }) {
     };
     fetchUnread();
     const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const fetchContactUnread = async () => {
+      try {
+        const { data } = await api.get('/contact-us/unread-count');
+        setUnreadContactCount(data.count);
+      } catch (_) {}
+    };
+    fetchContactUnread();
+    const interval = setInterval(fetchContactUnread, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -51,6 +64,9 @@ export default function Sidebar({ open, onClose }) {
               <span>{l.label}</span>
               {l.badge && unreadCount > 0 && (
                 <span className="notif-badge">{unreadCount}</span>
+              )}
+              {l.contactBadge && unreadContactCount > 0 && (
+                <span className="notif-badge">{unreadContactCount}</span>
               )}
             </NavLink>
           ))}

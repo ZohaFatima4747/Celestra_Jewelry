@@ -133,14 +133,14 @@
 .pc-btn.solid:disabled { color: var(--muted); border-color: var(--border); cursor: not-allowed; }
 
 @media (max-width: 600px) {
-  .pc-img-box { padding: 8px; }
+  .pc-content { padding: 10px 12px 14px; }
 }
 @media (max-width: 480px) {
   .pc-name { font-size: 14px; }
   .pc-price { font-size: 13px; }
-  .pc-content { padding: 10px 12px 14px; }
   .pc-btn.solid { padding: 6px 10px; font-size: 9px; }
 }
 @media (max-width: 360px) {
   .pc-name { font-size: 13px; }
+  .pc-content { padding: 8px 10px 12px; }
 }

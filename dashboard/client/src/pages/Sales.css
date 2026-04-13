@@ -23,3 +23,7 @@
 @media (max-width: 420px) {
   .fin-card { min-width: 100%; }
 }
+@media (max-width: 360px) {
+  .finance-kpis { gap: 10px; }
+  .chart-card { padding: 14px; }
+}

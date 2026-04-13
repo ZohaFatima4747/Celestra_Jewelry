@@ -59,11 +59,8 @@ const Footer = () => {
     </div>
 
     <div className="footer-bottom">
-      <span>© 2025 Celestra Jewelry. All rights reserved.</span>
+      <span>© 2026 Celestra Jewelry. All rights reserved.</span>
       <div className="footer-payments">
-        <span className="pay-badge">JazzCash</span>
-        <span className="pay-badge">EasyPaisa</span>
-        <span className="pay-badge">Bank Transfer</span>
         <span className="pay-badge">COD</span>
       </div>
     </div>

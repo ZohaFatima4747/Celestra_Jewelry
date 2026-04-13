@@ -7,6 +7,7 @@ const contactMessageSchema = new mongoose.Schema({
   message: { type: String, required: true },
   replied: { type: Boolean, default: false },
   repliedAt: { type: Date, default: null },
+  isRead: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model('ContactMessage', contactMessageSchema);

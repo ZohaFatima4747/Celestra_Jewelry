@@ -12,9 +12,18 @@
   cursor: pointer;
   margin-bottom: 16px;
   line-height: 1;
+  min-height: 44px;
 }
 
 @media (max-width: 768px) {
   .main-content { margin-left: 0; padding: 16px; }
   .menu-toggle { display: block; }
+}
+
+@media (max-width: 480px) {
+  .main-content { padding: 12px; }
+}
+
+@media (max-width: 360px) {
+  .main-content { padding: 10px 8px; }
 }

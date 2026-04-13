@@ -350,8 +350,8 @@
 
 /* ── Related products ── */
 .pd-related {
-  margin-top: 72px;
-  padding-top: 48px;
+  margin-top: 48px;
+  padding-top: 40px;
   border-top: 1px solid var(--border);
 }
 .pd-related-title {
@@ -423,9 +423,13 @@
   .pd-main-img { aspect-ratio: 1; }
   .pd-related-title { font-size: 22px; }
   .pd-breadcrumb { font-size: 10px; }
+  .pd-related { margin-top: 32px; padding-top: 28px; }
+  .pd-desc { font-size: 12px; }
 }
 
 @media (max-width: 360px) {
   .pd-related-grid { grid-template-columns: 1fr; }
   .pd-name { font-size: 20px; }
+  .pd-wrap { padding: 10px 12px 32px; }
+  .pd-related-title { font-size: 20px; }
 }

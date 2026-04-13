@@ -114,3 +114,9 @@
   .footer-payments { flex-wrap: wrap; gap: 6px; }
   .pay-badge { font-size: 9px; padding: 3px 8px; }
 }
+
+@media (max-width: 360px) {
+  .footer-main { padding: 24px 12px; }
+  .footer-right-cols { gap: 16px; }
+  .footer-bottom { padding: 12px; }
+}

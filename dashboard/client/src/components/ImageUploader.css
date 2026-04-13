@@ -54,3 +54,13 @@
   padding: 2px 0;
   font-weight: 700;
 }
+
+@media (max-width: 480px) {
+  .drop-zone { padding: 20px 14px; }
+  .drop-text { font-size: 0.85rem; }
+  .img-thumb { width: 68px; height: 68px; }
+}
+
+@media (max-width: 360px) {
+  .img-thumb { width: 60px; height: 60px; }
+}

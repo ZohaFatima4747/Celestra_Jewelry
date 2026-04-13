@@ -197,3 +197,11 @@
   .qv-price { font-size: 20px; }
   .qv-add-btn { padding: 12px 20px; }
 }
+
+@media (max-width: 400px) {
+  .qv-img-wrap { min-height: 180px; max-height: 220px; }
+  .qv-info { padding: 16px 16px 24px; }
+  .qv-name { font-size: 20px; }
+  .qv-footer { flex-direction: column; align-items: stretch; }
+  .qv-add-btn { width: 100%; text-align: center; min-height: 44px; }
+}

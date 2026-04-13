@@ -21,7 +21,7 @@ const OrderSchema = new mongoose.Schema({
     city:     { type: String, required: true },
     address:  { type: String, required: true },
   },
-  status: { type: String, default: 'pending' }, // pending, completed, cancelled
+  status: { type: String, default: 'pending COD' }, // pending COD, shipped, delivered, cancelled
   createdAt: { type: Date, default: Date.now }
 });
 

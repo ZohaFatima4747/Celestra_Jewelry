@@ -57,7 +57,12 @@ const UserOrders = () => {
     setFilteredOrders(status === "all" ? list : list.filter((o) => o.status === status));
   };
 
-  const BADGE_COLOR = { "pending COD": "yellow", completed: "green", cancelled: "red" };
+  const BADGE_COLOR = {
+    "pending COD": "yellow",
+    shipped:       "blue",
+    delivered:     "green",
+    cancelled:     "red",
+  };
 
   return (
     <div className="user-orders-container">
@@ -65,7 +70,7 @@ const UserOrders = () => {
       {message && <div className="order-message">{message}</div>}
 
       <div className="order-filters">
-        {["all", "pending COD", "completed", "cancelled"].map((status) => (
+        {["all", "pending COD", "shipped", "delivered", "cancelled"].map((status) => (
           <button key={status} className={`filter-btn ${activeFilter === status ? "active" : ""}`} onClick={() => applyFilter(status)}>
             {status === "all" ? "All" : status.charAt(0).toUpperCase() + status.slice(1)}
           </button>

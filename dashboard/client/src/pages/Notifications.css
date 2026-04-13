@@ -28,4 +28,12 @@
   .page-title { font-size: 1.2rem; }
   .notif-card { padding: 14px; }
   .notif-time { width: 100%; }
+  .notif-header { flex-direction: column; align-items: flex-start; }
+  .notif-actions { width: 100%; }
+  .filter-group { flex-wrap: wrap; }
+}
+
+@media (max-width: 400px) {
+  .filter-btn, .read-all-btn { padding: 6px 10px; font-size: 0.78rem; min-height: 36px; }
+  .notif-card { padding: 12px; }
 }

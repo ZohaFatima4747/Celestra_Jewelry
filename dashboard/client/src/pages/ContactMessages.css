@@ -30,12 +30,26 @@
 .cm-email:hover { text-decoration: underline; }
 .cm-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
 .cm-date  { font-size: 12px; color: #9080b0; }
-.cm-badge { font-size: 11px; font-weight: 600; background: #f0ecf8; color: #6a50a0; padding: 2px 10px; border-radius: 20px; }
+.cm-badge { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 20px; }
+.cm-badge--replied { background: #f0ecf8; color: #6a50a0; }
+.cm-badge--pending { background: #fff8ec; color: #b07800; }
 
 .cm-subject { font-size: 13px; font-weight: 600; color: #6a50a0; margin: 0 0 8px; }
 .cm-message { font-size: 14px; color: #4a3860; line-height: 1.6; margin: 0 0 16px; white-space: pre-wrap; }
 
 .cm-actions { display: flex; gap: 10px; }
+
+/* Filter tabs */
+.cm-filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.cm-filter-btn {
+  border: 1px solid #e8e0f0; background: #fff; border-radius: 20px;
+  padding: 6px 16px; font-size: 13px; font-weight: 500; color: #6a50a0;
+  cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 6px;
+}
+.cm-filter-btn:hover { border-color: #c8a060; color: #1a1030; }
+.cm-filter-btn.active { background: #1a1030; color: #c8a060; border-color: #1a1030; }
+.cm-filter-count { font-size: 11px; background: rgba(255,255,255,.15); border-radius: 10px; padding: 1px 7px; }
+.cm-filter-btn:not(.active) .cm-filter-count { background: #f0ecf8; color: #9080b0; }
 
 /* Buttons */
 .cm-btn { border: none; border-radius: 6px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity .15s; }
@@ -76,7 +90,7 @@
 .cm-textarea {
   display: block; width: calc(100% - 56px); margin: 0 28px;
   border: 1px solid #e8e0f0; border-radius: 8px; padding: 14px 16px;
-  font-size: 14px; color: #1a1030; resize: vertical; font-family: inherit;
+  font-size: 1rem; color: #1a1030; resize: vertical; font-family: inherit;
   outline: none; transition: border-color .2s;
 }
 .cm-textarea:focus { border-color: #c8a060; }
@@ -84,4 +98,24 @@
 .cm-modal-footer {
   display: flex; justify-content: flex-end; gap: 10px;
   padding: 16px 28px 24px;
+}
+
+@media (max-width: 600px) {
+  .cm-page { padding: 16px; }
+  .cm-card { padding: 16px; }
+  .cm-card-header { flex-direction: column; align-items: flex-start; }
+  .cm-right { align-items: flex-start; flex-direction: row; gap: 10px; }
+  .cm-modal { max-width: 100%; border-radius: 16px 16px 0 0; }
+  .cm-overlay { align-items: flex-end; padding: 0; }
+  .cm-textarea { width: calc(100% - 32px); margin: 0 16px; font-size: 16px; }
+  .cm-original { margin: 12px 16px; }
+  .cm-modal-header { padding: 18px 16px 12px; }
+  .cm-modal-footer { padding: 12px 16px 20px; }
+  .cm-actions { flex-wrap: wrap; }
+  .cm-toast { top: auto; bottom: 16px; right: 16px; left: 16px; text-align: center; }
+}
+
+@media (max-width: 400px) {
+  .cm-btn { padding: 8px 12px; font-size: 12px; }
+  .cm-name { font-size: 14px; }
 }

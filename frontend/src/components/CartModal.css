@@ -276,9 +276,17 @@
   }
   .cart-title { font-size: 18px; }
   .checkout-btn, .remove-btn { min-height: 44px; }
+  .remove-popup {
+    width: calc(100% - 32px);
+    left: 16px;
+    right: 16px;
+    transform: translate(0, -50%);
+    top: 50%;
+  }
 }
 
 @media (max-width: 360px) {
   .cart-sidebar { padding: 12px; }
   .item-name { font-size: 13px; }
+  .remove-popup { width: calc(100% - 24px); left: 12px; }
 }

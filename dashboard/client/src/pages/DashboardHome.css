@@ -99,8 +99,13 @@
   .stat-grid--3 { grid-template-columns: repeat(2, 1fr); }
   .stat-card__value { font-size: 1.3rem; }
   .page-title { font-size: 1.2rem; }
+  .chart-card { padding: 14px; }
 }
 @media (max-width: 380px) {
   .stat-grid--5,
   .stat-grid--3 { grid-template-columns: 1fr; }
+}
+@media (max-width: 360px) {
+  .stat-card { padding: 12px 14px 10px; }
+  .stat-card__value { font-size: 1.1rem; }
 }

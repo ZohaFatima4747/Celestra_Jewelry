@@ -344,8 +344,8 @@
   background: #fff;
   padding: 30px;
   border-radius: 12px;
-  width: 400px;
-  max-width: 90%;
+  width: 100%;
+  max-width: 400px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
@@ -391,7 +391,7 @@
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 16px;
   margin-bottom: 10px;
   box-sizing: border-box;
 }
@@ -455,6 +455,19 @@
     padding: 20px 16px 28px;
     border-radius: 20px 20px 0 0;
   }
+  .user-details-form input,
+  .user-details-form textarea { font-size: 16px; }
+  .checkout-btn, .cod-btn, .cancel-btn { min-height: 44px; }
+}
+@media (max-width: 480px) {
+  .uc-grand-total { font-size: 20px; }
+  .uc-item-name { font-size: 13px; }
+}
+@media (max-width: 360px) {
+  .uc-item { padding: 12px 12px 40px; gap: 10px; }
+  .uc-item-img { width: 44px; height: 44px; }
+  .uc-footer { padding: 14px 14px; }
+  .uc-grand-total { font-size: 18px; }
 }
 @media (max-width: 900px) {
   .payment-popup { width: 90%; }

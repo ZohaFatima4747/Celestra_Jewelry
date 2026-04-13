@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import api from '../utils/api';
 import './Sales.css';
-
-const COLORS = ['#c9a96e', '#4361ee', '#2ecc71', '#e74c3c'];
 
 export default function Sales() {
   const [data, setData] = useState(null);
@@ -14,8 +12,6 @@ export default function Sales() {
   }, []);
 
   if (loading) return <div className="page-loading">Loading sales data...</div>;
-
-  const pieData = Object.entries(data.paymentSummary).map(([name, value]) => ({ name, value }));
 
   return (
     <div className="sales-page">
@@ -68,18 +64,6 @@ export default function Sales() {
               <Area type="monotone" dataKey="revenue" stroke="#c9a96e" fill="url(#rev)" strokeWidth={2} />
               <Area type="monotone" dataKey="profit" stroke="#2ecc71" fill="url(#prof)" strokeWidth={2} />
             </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="chart-card">
-          <h3>Payment Methods</h3>
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-              </Pie>
-              <Tooltip formatter={(v) => `PKR ${v?.toLocaleString()}`} />
-            </PieChart>
           </ResponsiveContainer>
         </div>
       </div>

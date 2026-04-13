@@ -367,15 +367,23 @@
   .ad-content { padding: 14px; }
   .ad-page-title { font-size: 20px; }
   .ad-topbar { margin-bottom: 16px; }
+  .ad-user-chip { padding: 6px 10px; }
 }
 
 @media (max-width: 480px) {
   .ad-user-name { display: none; }
-  .ad-topbar { margin-bottom: 14px; }
+  .ad-topbar { margin-bottom: 14px; gap: 10px; }
   .ad-main { padding: 12px 10px; }
-  .ad-content { padding: 12px; }
+  .ad-content { padding: 12px; border-radius: 12px; }
   .ad-sb-item { min-height: 44px; }
   .ad-page-title { font-size: 18px; }
+  .ad-page-sub { font-size: 12px; }
+}
+
+@media (max-width: 360px) {
+  .ad-main { padding: 10px 8px; }
+  .ad-content { padding: 10px; }
+  .ad-page-title { font-size: 16px; }
 }
 
 /* ── KEEP OLD STYLES for UserCart / UserWishlist ─── */

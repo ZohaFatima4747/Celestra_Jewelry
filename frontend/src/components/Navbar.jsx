@@ -47,11 +47,10 @@ const Navbar = ({ cartCount, onCartOpen, searchQuery, onSearchChange }) => {
     <>
       {/* Topbar */}
       <div className="navbar-announce">
-        <span className="navbar-announce-center">Complimentary gift wrapping on all orders &nbsp;·&nbsp; Free nationwide delivery &nbsp;·&nbsp; Celestra Jewelry</span>
+        <span className="navbar-announce-center">Luxury jewelry for every occasion &nbsp;·&nbsp; Free delivery across Pakistan &nbsp;·&nbsp; Celestra Jewelry</span>
         <div className="navbar-announce-right">
-          <a href="#">Track Order</a>
-          <a href="#">Contact</a>
-          <a href="#">Visit Store</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/contact-us"); }}>Contact</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/"); }}>Visit Store</a>
         </div>
       </div>
 

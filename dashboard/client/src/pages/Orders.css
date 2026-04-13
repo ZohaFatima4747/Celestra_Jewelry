@@ -10,7 +10,7 @@
 .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
 .search-input, .filter-select {
   padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px;
-  font-size: 0.9rem; outline: none; background: #fff;
+  font-size: 1rem; outline: none; background: #fff;
 }
 .search-input { flex: 1; min-width: 180px; }
 .filter-select { min-width: 140px; }
@@ -96,4 +96,17 @@
   .order-modal__body { padding: 16px; }
   .order-modal__header { padding: 16px; }
   .od-grid { grid-template-columns: 1fr; }
+  .search-input, .filter-select { font-size: 16px; }
+  .filters { flex-direction: column; }
+  .search-input, .filter-select { width: 100%; min-width: unset; }
+}
+
+@media (max-width: 400px) {
+  .view-btn { padding: 5px 8px; font-size: 0.78rem; }
+  .status-badge { font-size: 0.72rem; padding: 3px 7px; }
+}
+
+@media (max-width: 360px) {
+  .page-title { font-size: 1.1rem; }
+  .order-modal { border-radius: 12px; }
 }
