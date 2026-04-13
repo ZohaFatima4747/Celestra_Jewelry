@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import SEO from "../components/SEO";
 import { CONTACT_URL } from "../utils/api";
 import "./ContactUs.css";
 
@@ -58,10 +58,11 @@ const ContactUs = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Contact Us – Celestra Jewelry</title>
-        <meta name="description" content="Get in touch with Celestra Jewelry. We'd love to hear from you." />
-      </Helmet>
+      <SEO
+        title="Contact Us"
+        description="Get in touch with Celestra Jewelry. Have a question, special request, or need help with your order? We'd love to hear from you."
+        url="/contact-us"
+      />
 
       <div className="cu-page">
         <div className="cu-card">

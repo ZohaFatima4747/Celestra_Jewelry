@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /product/
+Allow: /contact-us
+
+# Block admin and owner dashboards from indexing
+Disallow: /admin
+Disallow: /owner
+Disallow: /ContactForm
+
+# Block API routes
+Disallow: /api/
+
+Sitemap: https://www.celestrajewelry.com/sitemap.xml

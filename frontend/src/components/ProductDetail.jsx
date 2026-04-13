@@ -5,6 +5,7 @@ import Footer from "./Footer";
 import CartModal from "./CartModal";
 import CheckoutModal from "./CheckoutModal";
 import ProductImage from "./ProductImage";
+import SEO from "./SEO";
 import { useCart } from "../context/CartContext";
 import { getUserId } from "../utils/auth";
 import { PROD_URL, WISH_URL } from "../utils/api";
@@ -122,8 +123,55 @@ const ProductDetail = () => {
   const gallery = product.images?.length ? product.images : [];
   const isOutOfStock = product.stock === 0;
 
+  // Build absolute OG image URL for social sharing
+  const SITE_URL = import.meta.env.VITE_SITE_URL || "https://www.celestrajewelry.com";
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+  const rawImg   = gallery[0] || "";
+  const ogImage  = rawImg.startsWith("http")
+    ? rawImg
+    : rawImg.startsWith("/uploads/")
+      ? `${API_BASE}${rawImg}`
+      : `${SITE_URL}/og-image.jpg`;
+
+  const productSLD = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "description": product.description || `${product.name} – a beautifully crafted piece by Celestra Jewelry.`,
+    "image": ogImage,
+    "brand": { "@type": "Brand", "name": "Celestra Jewelry" },
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "PKR",
+      "price": product.price,
+      "availability": isOutOfStock
+        ? "https://schema.org/OutOfStock"
+        : "https://schema.org/InStock",
+      "url": `${SITE_URL}/product/${product._id}`,
+    },
+    ...(product.rating > 0 && {
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": product.rating,
+        "reviewCount": product.numReviews || 1,
+      },
+    }),
+  };
+
   return (
     <>
+      <SEO
+        title={product.name}
+        description={
+          product.description
+            ? product.description.slice(0, 155)
+            : `Shop ${product.name} at Celestra Jewelry. Premium handcrafted ${product.category || "jewelry"} with free delivery across Pakistan.`
+        }
+        image={ogImage}
+        url={`/product/${product._id}`}
+        type="product"
+        structuredData={productSLD}
+      />
       <Navbar
         cartCount={cartCount}
         onCartOpen={() => setCartOpen(true)}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./OwnerDashboard.css";
+import SEO from "./SEO";
 import { API, AUTH_URL as AUTH_API } from "../utils/api";
 
 const API_ADMIN = `${API}/admin`;
@@ -499,6 +500,7 @@ const OwnerDashboard = () => {
 
   return (
     <div className="od-layout">
+      <SEO title="Owner Dashboard" noIndex={true} />
       {sidebarOpen && <div className="od-overlay" onClick={() => setSidebarOpen(false)} />}
 
       {/* PROFILE MODAL */}

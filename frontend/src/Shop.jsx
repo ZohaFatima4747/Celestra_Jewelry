@@ -7,6 +7,7 @@ import ProductList from "./components/ProductList";
 import CartModal from "./components/CartModal";
 import CheckoutModal from "./components/CheckoutModal";
 import Footer from "./components/Footer";
+import SEO from "./components/SEO";
 import { useCart } from "./context/CartContext";
 import "./App.css";
 
@@ -39,8 +40,24 @@ function Shop() {
     alert(message);
   };
 
+  const homeSLD = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Celestra Jewelry",
+    "url": "https://www.celestrajewelry.com",
+    "logo": "https://www.celestrajewelry.com/og-image.jpg",
+    "description": "Premium handcrafted jewelry — rings, bracelets, earrings, chains and more. Free nationwide delivery across Pakistan.",
+    "sameAs": [],
+  };
+
   return (
     <div className="shop-wrapper">
+      <SEO
+        title="Shop Luxury Jewelry"
+        description="Browse Celestra Jewelry's full collection — handcrafted rings, bracelets, earrings, chains, handcuffs and more. Free nationwide delivery across Pakistan."
+        url="/"
+        structuredData={homeSLD}
+      />
       <Navbar
         cartCount={cartCount}
         onCartOpen={() => setCartOpen(true)}

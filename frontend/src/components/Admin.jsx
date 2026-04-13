@@ -5,6 +5,7 @@ import UserWishlist from "./UserWishlist";
 import AdminSettings from "./AdminSettings";
 import MyOrders from "./MyOrders";
 import UserMessages from "./UserMessages";
+import SEO from "./SEO";
 import { getUserId } from "../utils/auth";
 import { MSG_URL } from "../utils/api";
 import "./Admin.css";
@@ -86,6 +87,7 @@ const AdminDashboard = () => {
 
   return (
     <div className={`ad-layout ${isDark ? "dark" : "light"}`}>
+      <SEO title="My Account" noIndex={true} />
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="ad-overlay" onClick={() => setSidebarOpen(false)} />
