@@ -196,14 +196,15 @@
 @media (max-width: 900px) {
   .banner-hero { grid-template-columns: 1fr; min-height: auto; }
   .banner-content { padding: 40px 24px; border-right: none; border-bottom: 1px solid var(--border); }
-  .banner-wordmark { padding: 40px 24px; min-height: 220px; }
+  .banner-wordmark { padding: 32px 24px; min-height: auto; }
   .wm-name { font-size: clamp(32px, 8vw, 56px); letter-spacing: 10px; }
 }
 @media (max-width: 600px) {
-  .banner-content { padding: 32px 16px; }
+  .banner-hero { min-height: auto; }
+  .banner-content { padding: 28px 16px; }
   .banner-btns { flex-direction: column; align-items: stretch; gap: 10px; }
   .btn-primary, .btn-ghost { width: 100%; text-align: center; padding: 14px 24px; }
-  .banner-wordmark { padding: 32px 16px; min-height: 180px; }
+  .banner-wordmark { padding: 24px 16px; min-height: auto; }
   .wm-name { font-size: clamp(24px, 10vw, 44px); letter-spacing: 6px; text-indent: 6px; }
   .wm-divider { max-width: 220px; }
   .banner-trust { gap: 16px; padding: 14px 16px; }
@@ -212,7 +213,7 @@
   .banner-subtitle { font-size: 12px; margin-bottom: 24px; }
 }
 @media (max-width: 400px) {
-  .banner-content { padding: 24px 14px; }
+  .banner-content { padding: 20px 14px; }
   .banner-stats { gap: 14px; }
   .bstat strong { font-size: 18px; }
   .banner-trust { gap: 12px; padding: 12px 14px; }

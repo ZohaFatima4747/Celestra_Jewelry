@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback } from "react";
 import { getUserId } from "../utils/auth";
 import { CART_URL, PROD_URL } from "../utils/api";
+import api from "../utils/axiosInstance";
 
 const CartContext = createContext(null);
 
@@ -16,55 +17,71 @@ export const CartProvider = ({ children }) => {
       } catch { setCartItems([]); }
       return;
     }
-    fetch(`${CART_URL}?userId=${userId}`)
-      .then((r) => r.json())
-      .then((data) => setCartItems(data.items || []))
+    api.get(`${CART_URL}?userId=${userId}`)
+      .then((r) => setCartItems(r.data.items || []))
       .catch(() => {});
   }, []);
 
   const addToCart = useCallback((productId, productObj = null, qty = 1, selectedSize = null, selectedColor = null) => {
     const userId = getUserId();
 
+    // ── Guest path: store in localStorage ────────────────────────────────────
     if (!userId) {
       const doAdd = (product) => {
         const saved = localStorage.getItem("guestCart");
         const cart  = saved ? JSON.parse(saved) : [];
         const existing = cart.find(
-          (i) => i.product._id === productId && i.selectedSize === selectedSize && i.selectedColor === selectedColor
+          (i) => i.product._id === productId &&
+                 i.selectedSize === selectedSize &&
+                 i.selectedColor === selectedColor
         );
         if (existing) existing.qty += qty;
-        else cart.push({ _id: `guest_${productId}_${selectedSize || ""}_${selectedColor || ""}`, product, qty, selectedSize, selectedColor });
+        else cart.push({
+          _id: `guest_${productId}_${selectedSize || ""}_${selectedColor || ""}`,
+          product, qty, selectedSize, selectedColor,
+        });
         localStorage.setItem("guestCart", JSON.stringify(cart));
         setCartItems([...cart]);
       };
 
-      if (productObj) doAdd(productObj);
-      else fetch(`${PROD_URL}/${productId}`).then((r) => r.json()).then((p) => {
-        if (p && p._id) doAdd(p);
-      });
+      if (productObj) {
+        doAdd(productObj);
+      } else {
+        fetch(`${PROD_URL}/${productId}`)
+          .then((r) => r.json())
+          .then((p) => { if (p?._id) doAdd(p); });
+      }
       return;
     }
 
-    // Optimistic update for logged-in users
+    // ── Logged-in path: optimistic update then sync ───────────────────────────
     setCartItems((prev) => {
       const existing = prev.find(
-        (i) => i.product?._id === productId && i.selectedSize === selectedSize && i.selectedColor === selectedColor
+        (i) => i.product?._id === productId &&
+               i.selectedSize === selectedSize &&
+               i.selectedColor === selectedColor
       );
-      if (existing) return prev.map((i) =>
-        i.product?._id === productId && i.selectedSize === selectedSize && i.selectedColor === selectedColor
-          ? { ...i, qty: i.qty + qty }
-          : i
-      );
-      if (productObj) return [...prev, { _id: `temp_${productId}_${selectedSize || ""}_${selectedColor || ""}`, product: productObj, qty, selectedSize, selectedColor }];
+      if (existing) {
+        return prev.map((i) =>
+          i.product?._id === productId &&
+          i.selectedSize === selectedSize &&
+          i.selectedColor === selectedColor
+            ? { ...i, qty: i.qty + qty }
+            : i
+        );
+      }
+      if (productObj) {
+        return [...prev, {
+          _id: `temp_${productId}_${selectedSize || ""}_${selectedColor || ""}`,
+          product: productObj, qty, selectedSize, selectedColor,
+        }];
+      }
       return prev;
     });
 
-    // Send a single request with the full qty — backend merges into one item
-    fetch(`${CART_URL}/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, productId, qty, selectedSize, selectedColor }),
-    }).then(fetchCart);
+    api.post(`${CART_URL}/add`, { userId, productId, qty, selectedSize, selectedColor })
+      .then(fetchCart)
+      .catch(() => fetchCart()); // re-sync on error to revert optimistic update
   }, [fetchCart]);
 
   const removeItem = useCallback((cartItemId) => {
@@ -79,11 +96,7 @@ export const CartProvider = ({ children }) => {
       setCartItems([...cart]);
       return;
     }
-    fetch(`${CART_URL}/remove`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, cartItemId }),
-    }).then(fetchCart);
+    api.post(`${CART_URL}/remove`, { userId, cartItemId }).then(fetchCart);
   }, [fetchCart]);
 
   const deleteItem = useCallback((cartItemId) => {
@@ -97,13 +110,8 @@ export const CartProvider = ({ children }) => {
       setCartItems([...cart]);
       return;
     }
-    // Optimistic update
     setCartItems((prev) => prev.filter((i) => i._id !== cartItemId));
-    fetch(`${CART_URL}/delete`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, cartItemId }),
-    }).then(fetchCart);
+    api.post(`${CART_URL}/delete`, { userId, cartItemId }).then(fetchCart);
   }, [fetchCart]);
 
   const increaseQty = useCallback((cartItemId) => {
@@ -119,16 +127,12 @@ export const CartProvider = ({ children }) => {
     }
     const cartItem = cartItems.find((i) => i._id === cartItemId);
     if (!cartItem) return;
-    fetch(`${CART_URL}/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId,
-        productId: cartItem.product._id,
-        qty: 1,
-        selectedSize: cartItem.selectedSize || null,
-        selectedColor: cartItem.selectedColor || null,
-      }),
+    api.post(`${CART_URL}/add`, {
+      userId,
+      productId:     cartItem.product._id,
+      qty:           1,
+      selectedSize:  cartItem.selectedSize  || null,
+      selectedColor: cartItem.selectedColor || null,
     }).then(fetchCart);
   }, [cartItems, fetchCart]);
 

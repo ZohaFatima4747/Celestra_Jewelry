@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const MessageSchema = new mongoose.Schema({
-  userId: { type: String, required: true, index: true },
+  userId: { type: String, required: true },
   title: { type: String, required: true },
   body: { type: String, required: true },
   orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
@@ -13,5 +13,8 @@ const MessageSchema = new mongoose.Schema({
   isRead: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
+
+// Compound index: fetch all messages for a user sorted by date
+MessageSchema.index({ userId: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Message', MessageSchema);

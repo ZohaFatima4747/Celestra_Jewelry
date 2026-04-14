@@ -1,9 +1,6 @@
 /**
  * Resolves product image filenames to displayable URLs.
  *
- * Legacy JPEG assets live in /public/product-images/ — served as static files
- * by both Vite dev/preview and the Express backend, no JS bundle cost.
- *
  * Priority:
  *  1. Full URL (http/https) → used as-is
  *  2. Server path (/uploads/...) → prepend API base, swap variant suffix
@@ -15,11 +12,8 @@ const BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export function resolveImage(filename, size = 'full') {
   if (!filename) return '';
-
-  // Already a full URL
   if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
 
-  // New uploads: /uploads/<base>-full.webp
   if (filename.startsWith('/uploads/') || filename.startsWith('/assets/')) {
     if (filename.endsWith('-full.webp') && size !== 'full') {
       return `${BASE}${filename.replace(/-full\.webp$/, `-${size}.webp`)}`;
@@ -27,24 +21,35 @@ export function resolveImage(filename, size = 'full') {
     return `${BASE}${filename}`;
   }
 
-  // Legacy assets — served from public/product-images/ (no backend required)
+  // Legacy assets — served from public/product-images/
   return `/product-images/${filename}`;
 }
 
 /**
  * Returns src + srcSet + sizes for responsive <img> rendering.
- * New uploads get a 3-stop srcSet (400w / 800w / 1200w).
- * Legacy assets fall back to a single src.
+ *
+ * New uploads (webp variants): 3-stop srcSet (400w / 800w / 1200w)
+ * Legacy JPEGs: single src — no srcSet (browser can't resize them)
+ *
+ * sizes attribute reflects actual rendered widths:
+ *  - Mobile grid (2-col): ~50vw minus gap → 45vw
+ *  - Tablet (3-col): ~33vw → 30vw
+ *  - Desktop (4-col): ~25vw → 300px max
+ *  - Product detail main image: up to 600px
  */
 export function resolveImageSrcSet(filename) {
   const full = resolveImage(filename, 'full');
+
   const isNewUpload = Boolean(
     filename &&
     (filename.startsWith('/uploads/') || filename.startsWith('http')) &&
     filename.endsWith('-full.webp')
   );
 
-  if (!isNewUpload) return { src: full, srcSet: undefined, sizes: undefined };
+  if (!isNewUpload) {
+    // Legacy JPEG — just return the single src, no srcSet
+    return { src: full, srcSet: undefined, sizes: undefined };
+  }
 
   const md    = resolveImage(filename, 'md');
   const thumb = resolveImage(filename, 'thumb');
@@ -52,7 +57,14 @@ export function resolveImageSrcSet(filename) {
   return {
     src:    full,
     srcSet: `${thumb} 400w, ${md} 800w, ${full} 1200w`,
-    sizes:  '(max-width: 480px) 200px, (max-width: 900px) 400px, 600px',
+    // Accurate sizes: matches the actual CSS grid column widths at each breakpoint
+    sizes: [
+      '(max-width: 360px) calc(100vw - 24px)',   // 1-col on tiny screens
+      '(max-width: 600px) calc(50vw - 14px)',    // 2-col mobile grid
+      '(max-width: 900px) calc(50vw - 20px)',    // 2-col tablet
+      '(max-width: 1100px) calc(33vw - 20px)',   // 3-col
+      '300px',                                    // 4-col desktop
+    ].join(', '),
   };
 }
 

@@ -5,69 +5,92 @@ const Contact = require("../models/contact");
 const Product = require("../models/Product");
 const Message = require("../models/Message");
 const { adminAuth } = require("../middleware/auth");
+const logger = require("../utils/logger");
 const sendOrderShipped   = require("../utils/sendOrderShipped");
 const sendOrderDelivered = require("../utils/sendOrderDelivered");
 const sendOrderCancelled = require("../utils/sendOrderCancelled");
 
-// ── STATS ─────────────────────────────────────────
+// ── STATS (aggregation — no full collection fetch) ────────────────────────────
 // GET /api/admin/stats
-router.get("/stats", adminAuth, async (req, res) => {
+router.get("/stats", adminAuth, async (_req, res) => {
   try {
-    const allOrders = await Order.find({});
-    const allUsers  = await Contact.find({});
+    const [orderStats] = await Order.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalOrders:      { $sum: 1 },
+          totalRevenue:     { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, "$total", 0] } },
+          completedOrders:  { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] } },
+          cancelledOrders:  { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
+          pendingOrders:    { $sum: { $cond: [{ $in: ["$status", ["pending COD", "shipped"]] }, 1, 0] } },
+        },
+      },
+    ]);
 
-    const totalRevenue = allOrders
-      .filter(o => o.status === "delivered")
-      .reduce((sum, o) => sum + o.total, 0);
+    const totalUsers = await Contact.countDocuments({ role: "user" });
 
-    const totalOrders     = allOrders.length;
-    const completedOrders = allOrders.filter(o => o.status === "delivered").length;
-    const pendingOrders   = allOrders.filter(o => o.status === "pending COD" || o.status === "shipped").length;
-    const cancelledOrders = allOrders.filter(o => o.status === "cancelled").length;
-    const totalUsers      = allUsers.filter(u => u.role !== "admin").length;
+    // Last 7 days revenue — one aggregation, no JS filtering
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
 
-    // Last 7 days revenue chart data
+    const dailyData = await Order.aggregate([
+      { $match: { status: "delivered", createdAt: { $gte: sevenDaysAgo } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: { $sum: "$total" },
+          orders:  { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Build a full 7-day array (fill gaps with 0)
     const last7 = [];
     for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dayStart = new Date(date.setHours(0, 0, 0, 0));
-      const dayEnd   = new Date(date.setHours(23, 59, 59, 999));
-
-      const dayOrders = allOrders.filter(o => {
-        const created = new Date(o.createdAt);
-        return created >= dayStart && created <= dayEnd && o.status === "delivered";
-      });
-
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      const found = dailyData.find((x) => x._id === key);
       last7.push({
-        day: dayStart.toLocaleDateString("en-PK", { weekday: "short" }),
-        revenue: dayOrders.reduce((sum, o) => sum + o.total, 0),
-        orders: dayOrders.length,
+        day: d.toLocaleDateString("en-PK", { weekday: "short" }),
+        revenue: found?.revenue || 0,
+        orders:  found?.orders  || 0,
       });
     }
 
     res.json({
-      totalRevenue,
-      totalOrders,
-      completedOrders,
-      pendingOrders,
-      cancelledOrders,
+      totalRevenue:     orderStats?.totalRevenue     || 0,
+      totalOrders:      orderStats?.totalOrders      || 0,
+      completedOrders:  orderStats?.completedOrders  || 0,
+      pendingOrders:    orderStats?.pendingOrders     || 0,
+      cancelledOrders:  orderStats?.cancelledOrders  || 0,
       totalUsers,
       last7,
     });
   } catch (err) {
-    console.error(err);
+    logger.error({ err }, "GET /admin/stats failed");
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// ── ALL ORDERS ────────────────────────────────────
-// GET /api/admin/orders
+// ── ALL ORDERS (paginated) ────────────────────────────────────────────────────
+// GET /api/admin/orders?page=1&limit=50
 router.get("/orders", adminAuth, async (req, res) => {
   try {
-    const orders = await Order.find({}).sort({ createdAt: -1 });
-    res.json(orders);
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(100, parseInt(req.query.limit) || 50);
+    const skip  = (page - 1) * limit;
+
+    const [orders, total] = await Promise.all([
+      Order.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Order.countDocuments(),
+    ]);
+
+    res.json({ orders, total, page, pages: Math.ceil(total / limit) });
   } catch (err) {
+    logger.error({ err }, "GET /admin/orders failed");
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -88,58 +111,67 @@ router.put("/orders/:orderId", adminAuth, async (req, res) => {
     );
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // Fire notifications on delivered
     if (status === "delivered") {
-      const orderId = order._id;
-      const shortId = `#${String(orderId).slice(-8).toUpperCase()}`;
+      const shortId = `#${String(order._id).slice(-8).toUpperCase()}`;
       try {
-        await Message.create({
-          userId: order.sessionId,
-          title: "Order Delivered 🎉",
-          body: `Your order ${shortId} has been delivered. Thank you for shopping with us!`,
-          orderId,
-          type: "status_update",
-        });
-        await Message.create({
-          userId: "admin",
-          title: "Order Marked as Delivered ✅",
-          body: `Order ${shortId} for ${order.customer?.name || "customer"} has been marked as delivered. Total: PKR ${order.total?.toLocaleString()}`,
-          orderId,
-          type: "status_update",
-        });
+        await Message.create([
+          {
+            userId: order.sessionId,
+            title: "Order Delivered 🎉",
+            body: `Your order ${shortId} has been delivered. Thank you for shopping with us!`,
+            orderId: order._id,
+            type: "status_update",
+          },
+          {
+            userId: "admin",
+            title: "Order Marked as Delivered ✅",
+            body: `Order ${shortId} for ${order.customer?.name || "customer"} has been marked as delivered. Total: PKR ${order.total?.toLocaleString()}`,
+            orderId: order._id,
+            type: "status_update",
+          },
+        ]);
       } catch (msgErr) {
-        console.error("Failed to save delivery notifications:", msgErr.message);
+        logger.warn({ err: msgErr }, "Failed to save delivery notifications");
       }
     }
 
-    // Status-based email triggers (non-blocking)
     if (status === "shipped") {
       sendOrderShipped(order).catch((err) =>
-        console.error("[EMAIL] Shipped notification failed:", err.message)
+        logger.warn({ err }, "[EMAIL] Shipped notification failed")
       );
     } else if (status === "delivered") {
       sendOrderDelivered(order).catch((err) =>
-        console.error("[EMAIL] Delivered notification failed:", err.message)
+        logger.warn({ err }, "[EMAIL] Delivered notification failed")
       );
     } else if (status === "cancelled") {
       sendOrderCancelled(order).catch((err) =>
-        console.error("[EMAIL] Cancelled notification failed:", err.message)
+        logger.warn({ err }, "[EMAIL] Cancelled notification failed")
       );
     }
 
     res.json({ success: true, order });
   } catch (err) {
+    logger.error({ err }, "PUT /admin/orders/:id failed");
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// ── ALL USERS ─────────────────────────────────────
-// GET /api/admin/users
+// ── ALL USERS (paginated) ─────────────────────────────────────────────────────
+// GET /api/admin/users?page=1&limit=50
 router.get("/users", adminAuth, async (req, res) => {
   try {
-    const users = await Contact.find({ role: "user" }).select("-password").sort({ _id: -1 });
-    res.json(users);
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(100, parseInt(req.query.limit) || 50);
+    const skip  = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      Contact.find({ role: "user" }).select("-password").sort({ _id: -1 }).skip(skip).limit(limit).lean(),
+      Contact.countDocuments({ role: "user" }),
+    ]);
+
+    res.json({ users, total, page, pages: Math.ceil(total / limit) });
   } catch (err) {
+    logger.error({ err }, "GET /admin/users failed");
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -151,17 +183,27 @@ router.delete("/users/:userId", adminAuth, async (req, res) => {
     await Contact.findByIdAndDelete(req.params.userId);
     res.json({ success: true });
   } catch (err) {
+    logger.error({ err }, "DELETE /admin/users/:id failed");
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// ── PRODUCTS ──────────────────────────────────────
-// GET /api/admin/products
+// ── PRODUCTS (paginated) ──────────────────────────────────────────────────────
+// GET /api/admin/products?page=1&limit=50
 router.get("/products", adminAuth, async (req, res) => {
   try {
-    const products = await Product.find({}).sort({ createdAt: -1 });
-    res.json(products);
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(100, parseInt(req.query.limit) || 50);
+    const skip  = (page - 1) * limit;
+
+    const [products, total] = await Promise.all([
+      Product.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Product.countDocuments(),
+    ]);
+
+    res.json({ products, total, page, pages: Math.ceil(total / limit) });
   } catch (err) {
+    logger.error({ err }, "GET /admin/products failed");
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -170,23 +212,23 @@ router.get("/products", adminAuth, async (req, res) => {
 router.post("/products", adminAuth, async (req, res) => {
   try {
     const { name, price, stock, category, images } = req.body;
-    if (!name || !name.trim()) return res.status(400).json({ message: "Product name is required" });
-    if (price === undefined || price === null || isNaN(Number(price))) return res.status(400).json({ message: "Valid price is required" });
-    if (!category || !category.trim()) return res.status(400).json({ message: "Category is required" });
-    if (!images || !Array.isArray(images) || images.length === 0) return res.status(400).json({ message: "At least one image is required" });
+    if (!name?.trim())                                    return res.status(400).json({ message: "Product name is required" });
+    if (price === undefined || isNaN(Number(price)))      return res.status(400).json({ message: "Valid price is required" });
+    if (!category?.trim())                                return res.status(400).json({ message: "Category is required" });
+    if (!Array.isArray(images) || images.length === 0)    return res.status(400).json({ message: "At least one image is required" });
 
-    const payload = {
+    const product = new Product({
       ...req.body,
-      name: name.trim(),
+      name:     name.trim(),
       category: category.trim().toLowerCase(),
-      price: Number(price),
-      stock: Number(stock || 0),
-    };
-    const product = new Product(payload);
+      price:    Number(price),
+      stock:    Number(stock || 0),
+    });
     await product.save();
     res.status(201).json({ success: true, product });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    logger.error({ err }, "POST /admin/products failed");
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -194,15 +236,20 @@ router.post("/products", adminAuth, async (req, res) => {
 router.put("/products/:productId", adminAuth, async (req, res) => {
   try {
     const updates = { ...req.body };
-    if (updates.category) updates.category = updates.category.trim().toLowerCase();
-    if (updates.price !== undefined) updates.price = Number(updates.price);
-    if (updates.stock !== undefined) updates.stock = Number(updates.stock);
+    if (updates.category)          updates.category = updates.category.trim().toLowerCase();
+    if (updates.price !== undefined) updates.price   = Number(updates.price);
+    if (updates.stock !== undefined) updates.stock   = Number(updates.stock);
 
-    const product = await Product.findByIdAndUpdate(req.params.productId, updates, { new: true, runValidators: true });
+    const product = await Product.findByIdAndUpdate(
+      req.params.productId,
+      updates,
+      { new: true, runValidators: true }
+    );
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.json({ success: true, product });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    logger.error({ err }, "PUT /admin/products/:id failed");
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -212,87 +259,115 @@ router.delete("/products/:productId", adminAuth, async (req, res) => {
     await Product.findByIdAndDelete(req.params.productId);
     res.json({ success: true });
   } catch (err) {
+    logger.error({ err }, "DELETE /admin/products/:id failed");
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// ── SALES / FINANCE ───────────────────────────────
+// ── SALES / FINANCE ───────────────────────────────────────────────────────────
 // GET /api/admin/sales
-router.get("/sales", adminAuth, async (req, res) => {
+router.get("/sales", adminAuth, async (_req, res) => {
   try {
-    const orders = await Order.find({ status: "delivered" });
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
 
-    // Monthly revenue for last 6 months
-    const monthly = {};
+    const [monthlyRaw, paymentRaw, totals] = await Promise.all([
+      // Monthly revenue for last 6 months
+      Order.aggregate([
+        { $match: { status: "delivered", createdAt: { $gte: sixMonthsAgo } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+            revenue: { $sum: "$total" },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+      // Payment method breakdown
+      Order.aggregate([
+        {
+          $group: {
+            _id: "$status",
+            total: { $sum: "$total" },
+          },
+        },
+      ]),
+      // Overall totals
+      Order.aggregate([
+        { $match: { status: "delivered" } },
+        { $group: { _id: null, revenue: { $sum: "$total" } } },
+      ]),
+    ]);
+
+    // Build 6-month array filling gaps
+    const monthlyData = [];
     for (let i = 5; i >= 0; i--) {
       const d = new Date();
       d.setMonth(d.getMonth() - i);
-      const key = d.toLocaleDateString("en-PK", { month: "short", year: "numeric" });
-      monthly[key] = 0;
+      const key   = d.toISOString().slice(0, 7);
+      const label = d.toLocaleDateString("en-PK", { month: "short", year: "numeric" });
+      const found = monthlyRaw.find((x) => x._id === key);
+      const revenue = found?.revenue || 0;
+      monthlyData.push({ month: label, revenue, profit: revenue * 0.3, loss: 0 });
     }
 
-    orders.forEach((o) => {
-      const key = new Date(o.createdAt).toLocaleDateString("en-PK", { month: "short", year: "numeric" });
-      if (key in monthly) monthly[key] += o.total;
-    });
-
-    const monthlyData = Object.entries(monthly).map(([month, revenue]) => ({
-      month,
-      revenue,
-      profit: revenue * 0.3, // estimated 30% margin
-      loss: 0,
-    }));
-
-    // Payment method summary (all orders)
-    const allOrders = await Order.find({});
     const paymentSummary = { COD: 0, Online: 0 };
-    allOrders.forEach((o) => {
-      if (o.status === "pending COD" || o.status === "shipped") paymentSummary.COD += o.total;
-      else paymentSummary.Online += o.total;
+    paymentRaw.forEach(({ _id: status, total }) => {
+      if (status === "pending COD" || status === "shipped") paymentSummary.COD += total;
+      else paymentSummary.Online += total;
     });
 
-    const totalRevenue = orders.reduce((s, o) => s + o.total, 0);
-    const totalProfit = totalRevenue * 0.3;
-
-    res.json({ monthlyData, paymentSummary, totalRevenue, totalProfit });
+    const totalRevenue = totals[0]?.revenue || 0;
+    res.json({ monthlyData, paymentSummary, totalRevenue, totalProfit: totalRevenue * 0.3 });
   } catch (err) {
+    logger.error({ err }, "GET /admin/sales failed");
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// ── ALERTS ────────────────────────────────────────
+// ── ALERTS ────────────────────────────────────────────────────────────────────
 // GET /api/admin/alerts
-router.get("/alerts", adminAuth, async (req, res) => {
+router.get("/alerts", adminAuth, async (_req, res) => {
   try {
-    const lowStock = await Product.find({ stock: { $lte: 5 } }).select("name stock category");
-    const pendingOrders = await Order.find({ status: { $in: ["pending COD", "shipped"] } })
-      .select("customer.name total createdAt status")
-      .sort({ createdAt: -1 })
-      .limit(20);
-
+    const [lowStock, pendingOrders] = await Promise.all([
+      Product.find({ stock: { $lte: 5 } }).select("name stock category").lean(),
+      Order.find({ status: { $in: ["pending COD", "shipped"] } })
+        .select("customer.name total createdAt status")
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .lean(),
+    ]);
     res.json({ lowStock, pendingOrders });
   } catch (err) {
+    logger.error({ err }, "GET /admin/alerts failed");
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// ── ADMIN NOTIFICATIONS ───────────────────────────
+// ── ADMIN NOTIFICATIONS ───────────────────────────────────────────────────────
 // GET /api/admin/notifications
-router.get("/notifications", adminAuth, async (req, res) => {
+router.get("/notifications", adminAuth, async (_req, res) => {
   try {
-    const notifications = await Message.find({ userId: "admin" }).sort({ createdAt: -1 }).limit(50);
+    const notifications = await Message.find({ userId: "admin" })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
     res.json(notifications);
   } catch (err) {
+    logger.error({ err }, "GET /admin/notifications failed");
     res.status(500).json({ message: "Server error" });
   }
 });
 
 // PATCH /api/admin/notifications/read-all  ← must be before /:id/read
-router.patch("/notifications/read-all", adminAuth, async (req, res) => {
+router.patch("/notifications/read-all", adminAuth, async (_req, res) => {
   try {
     await Message.updateMany({ userId: "admin" }, { isRead: true });
     res.json({ success: true });
   } catch (err) {
+    logger.error({ err }, "PATCH /admin/notifications/read-all failed");
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -300,10 +375,15 @@ router.patch("/notifications/read-all", adminAuth, async (req, res) => {
 // PATCH /api/admin/notifications/:id/read
 router.patch("/notifications/:id/read", adminAuth, async (req, res) => {
   try {
-    const msg = await Message.findByIdAndUpdate(req.params.id, { isRead: true }, { new: true });
+    const msg = await Message.findByIdAndUpdate(
+      req.params.id,
+      { isRead: true },
+      { new: true }
+    );
     if (!msg) return res.status(404).json({ message: "Not found" });
     res.json(msg);
   } catch (err) {
+    logger.error({ err }, "PATCH /admin/notifications/:id/read failed");
     res.status(500).json({ message: "Server error" });
   }
 });

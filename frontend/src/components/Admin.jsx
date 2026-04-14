@@ -8,6 +8,7 @@ import UserMessages from "./UserMessages";
 import SEO from "./SEO";
 import { getUserId } from "../utils/auth";
 import { MSG_URL } from "../utils/api";
+import api from "../utils/axiosInstance";
 import "./Admin.css";
 
 const AdminDashboard = () => {
@@ -31,6 +32,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchUnread = async () => {
       const userId = getUserId();
+      if (!userId) return;
       const email = (() => {
         try {
           const token = localStorage.getItem("token");
@@ -41,15 +43,12 @@ const AdminDashboard = () => {
           return localStorage.getItem("guestEmail") || null;
         } catch { return localStorage.getItem("guestEmail") || null; }
       })();
-      const uid = userId || "guest";
       const emailParam = email ? `?email=${encodeURIComponent(email)}` : "";
       try {
-        const res  = await fetch(`${MSG_URL}/user/${uid}${emailParam}`);
-        const data = await res.json();
+        const res = await api.get(`${MSG_URL}/user/${userId}${emailParam}`);
+        const data = res.data;
         setUnreadCount(Array.isArray(data) ? data.filter((m) => !m.isRead).length : 0);
-      } catch (err) {
-        console.error("Failed to fetch unread count:", err);
-      }
+      } catch { /* silent */ }
     };
     fetchUnread();
   }, [activeTab]);

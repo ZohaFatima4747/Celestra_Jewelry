@@ -4,15 +4,10 @@
   flex-direction: column;
   position: relative;
   transition: background 0.15s;
-  animation: fadeUp 0.3s ease both;
   overflow: hidden;
+  /* No staggered animation — causes perceived slowness on mobile with many cards */
 }
 .pc-card:hover { background: var(--lavender); }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 
 /* Badge */
 .pc-badge {

@@ -5,6 +5,8 @@ const Order = require("../models/Order");
 const Contact = require("../models/contact");
 const Message = require("../models/Message");
 const { orderLimiter } = require("../middleware/security");
+const { authMiddleware } = require("../middleware/auth");
+const logger = require("../utils/logger");
 const sendOrderConfirmation = require("../utils/sendOrderConfirmation");
 const sendOrderCancelled    = require("../utils/sendOrderCancelled");
 
@@ -97,7 +99,7 @@ router.post("/complete-payment", orderLimiter, async (req, res) => {
 
     // Send order confirmation email (non-blocking)
     sendOrderConfirmation(order).catch((err) =>
-      console.error("[EMAIL] Order confirmation failed:", err.message)
+      logger.warn({ err }, "[EMAIL] Order confirmation failed")
     );
 
     // Save guest contact if applicable
@@ -140,7 +142,7 @@ router.post("/complete-payment", orderLimiter, async (req, res) => {
           });
         }
       } catch (err) {
-        console.error("[GUEST] Failed to save guest contact:", err.message);
+        logger.warn({ err }, "[GUEST] Failed to save guest contact");
       }
     }
 
@@ -164,7 +166,7 @@ router.post("/complete-payment", orderLimiter, async (req, res) => {
         type: "order_placed",
       });
     } catch (err) {
-      console.error("Failed to save notifications:", err.message);
+      logger.warn({ err }, "Failed to save order notifications");
     }
 
     // Clear DB cart
@@ -177,13 +179,14 @@ router.post("/complete-payment", orderLimiter, async (req, res) => {
 
     res.json({ success: true, order });
   } catch (err) {
-    console.error("Order error:", err);
+    logger.error({ err }, "Order placement error");
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // ── PUT /api/orders/:orderId/status ───────────────────────────────────────────
-router.put("/:orderId/status", async (req, res) => {
+// Users can only cancel their own pending orders
+router.put("/:orderId/status", authMiddleware, async (req, res) => {
   const { status } = req.body;
   if (status !== "cancelled")
     return res.status(400).json({ error: "Only cancellation is allowed via this endpoint." });
@@ -191,6 +194,11 @@ router.put("/:orderId/status", async (req, res) => {
   try {
     const order = await Order.findById(req.params.orderId);
     if (!order) return res.status(404).json({ error: "Order not found" });
+
+    // Ensure the requesting user owns this order
+    if (order.sessionId !== req.user.id && req.user.role !== "admin") {
+      return res.status(403).json({ error: "Forbidden" });
+    }
 
     if (order.status !== "pending COD")
       return res.status(400).json({ error: "Only pending orders can be cancelled." });
@@ -210,24 +218,30 @@ router.put("/:orderId/status", async (req, res) => {
         type: "order_cancelled",
       });
     } catch (err) {
-      console.error("Failed to save cancellation notification:", err.message);
+      logger.warn({ err }, "Failed to save cancellation notification");
     }
 
     // Send cancellation email (non-blocking)
     sendOrderCancelled(order).catch((err) =>
-      console.error("[EMAIL] Cancelled notification failed:", err.message)
+      logger.warn({ err }, "[EMAIL] Cancelled notification failed")
     );
 
     res.json({ success: true, order: updated });
   } catch (err) {
-    console.error("Error updating order status:", err);
+    logger.error({ err }, "Error updating order status");
     res.status(500).json({ error: "Server error" });
   }
 });
 
 // ── GET /api/orders/user/:userId ──────────────────────────────────────────────
-router.get("/user/:userId", async (req, res) => {
+router.get("/user/:userId", authMiddleware, async (req, res) => {
   const { userId } = req.params;
+
+  // Users can only fetch their own orders
+  if (req.user.id !== userId && req.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
   if (!userId) return res.status(400).json({ error: "Missing userId" });
 
   try {
@@ -247,7 +261,7 @@ router.get("/user/:userId", async (req, res) => {
 
     res.json(orders);
   } catch (err) {
-    console.error(err);
+    logger.error({ err }, "GET /orders/user/:userId failed");
     res.status(500).json({ error: "Server error" });
   }
 });

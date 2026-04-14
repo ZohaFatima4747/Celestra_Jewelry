@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { MSG_URL } from "../utils/api";
 import { getUserId, getUserEmail } from "../utils/auth";
+import api from "../utils/axiosInstance";
 
 const TYPE_META = {
   order_placed:    { emoji: "🎉", accent: "#22c55e" },
@@ -17,15 +18,17 @@ const UserMessages = ({ isDark }) => {
   const userEmail = getUserEmail() || localStorage.getItem("guestEmail") || null;
 
   const fetchMessages = useCallback(async () => {
+    if (!userId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const uid        = userId || "guest";
       const emailParam = userEmail ? `?email=${encodeURIComponent(userEmail)}` : "";
-      const res        = await fetch(`${MSG_URL}/user/${uid}${emailParam}`);
-      const data       = await res.json();
-      setMessages(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Failed to fetch messages:", err);
+      const res        = await api.get(`${MSG_URL}/user/${userId}${emailParam}`);
+      setMessages(Array.isArray(res.data) ? res.data : []);
+    } catch {
       setMessages([]);
     } finally {
       setLoading(false);
@@ -37,21 +40,16 @@ const UserMessages = ({ isDark }) => {
   const markRead = async (msgId, e) => {
     e?.stopPropagation();
     try {
-      await fetch(`${MSG_URL}/${msgId}/read`, { method: "PATCH" });
+      await api.patch(`${MSG_URL}/${msgId}/read`);
       setMessages((prev) => prev.map((m) => m._id === msgId ? { ...m, isRead: true } : m));
-    } catch (err) {
-      console.error("Failed to mark as read:", err);
-    }
+    } catch { /* silent */ }
   };
 
   const markAllRead = async () => {
     try {
-      const uid = userId || "guest";
-      await fetch(`${MSG_URL}/user/${uid}/read-all`, { method: "PATCH" });
+      await api.patch(`${MSG_URL}/user/${userId}/read-all`);
       setMessages((prev) => prev.map((m) => ({ ...m, isRead: true })));
-    } catch (err) {
-      console.error("Failed to mark all read:", err);
-    }
+    } catch { /* silent */ }
   };
 
   const displayed   = filter === "unread" ? messages.filter((m) => !m.isRead) : messages;

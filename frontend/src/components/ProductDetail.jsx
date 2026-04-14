@@ -9,7 +9,7 @@ import SEO from "./SEO";
 import { useCart } from "../context/CartContext";
 import { getUserId } from "../utils/auth";
 import { PROD_URL, WISH_URL } from "../utils/api";
-import { resolveImage } from "../utils/assetMap";
+import { fetchCached } from "../utils/productCache";
 import "./ProductDetail.css";
 
 const ProductDetail = () => {
@@ -32,46 +32,47 @@ const ProductDetail = () => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [cartMsg, setCartMsg]           = useState("");
 
-  // Fetch product + related
+  // Fetch product + related — uses cache so navigating back is instant
   useEffect(() => {
     window.scrollTo(0, 0);
     setActiveImg(0);
     setQty(1);
     setSelectedSize(null);
     setSelectedColor(null);
-    // Fetch the specific product by ID, then fetch related in the same category
-    fetch(`${PROD_URL}/${id}`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Not found");
-        return r.json();
-      })
+
+    let cancelled = false;
+
+    fetchCached(`${PROD_URL}/${id}`)
       .then((found) => {
+        if (cancelled) return;
         setProduct(found);
         setLoading(false);
-        // Fetch related products in the same category
+        // Fetch related in parallel — also cached
         if (found.category) {
-          fetch(`${PROD_URL}?category=${encodeURIComponent(found.category)}&limit=5`)
-            .then((r) => r.json())
-            .then((data) => setRelated(data.filter((p) => p._id !== id).slice(0, 4)))
+          fetchCached(`${PROD_URL}?category=${encodeURIComponent(found.category)}&limit=5`)
+            .then((data) => {
+              if (!cancelled) setRelated(data.filter((p) => p._id !== id).slice(0, 4));
+            })
             .catch(() => {});
         }
       })
       .catch(() => {
-        setProduct(null);
-        setLoading(false);
+        if (!cancelled) { setProduct(null); setLoading(false); }
       });
+
+    return () => { cancelled = true; };
   }, [id]);
 
-  // Fetch wishlist status
+  // Fetch wishlist status — runs in parallel with product fetch
   useEffect(() => {
     const userId = getUserId();
     if (!userId || !product) return;
-    fetch(`${WISH_URL}/${userId}`)
-      .then((r) => r.json())
+    fetchCached(`${WISH_URL}/${userId}`)
       .then((data) => {
         if (data.success) setIsWishlisted(data.wishlist.some((p) => p.productId._id === product._id));
-      });
-  }, [product]);
+      })
+      .catch(() => {});
+  }, [product?._id]);
 
   // Sync cart on mount
   useEffect(() => { fetchCart(); }, [fetchCart]);

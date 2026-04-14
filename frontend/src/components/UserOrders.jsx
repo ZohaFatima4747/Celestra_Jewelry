@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getUserId, getUserEmail } from "../utils/auth";
 import { ORDER_URL } from "../utils/api";
+import api from "../utils/axiosInstance";
 import "./UserOrder.css";
 
 const UserOrders = () => {
@@ -20,8 +21,8 @@ const UserOrders = () => {
         const url   = email
           ? `${ORDER_URL}/user/${userId}?email=${encodeURIComponent(email)}`
           : `${ORDER_URL}/user/${userId}`;
-        const res  = await fetch(url);
-        const data = await res.json();
+        const res  = await api.get(url);
+        const data = res.data;
         setOrders(data);
         setFilteredOrders(data);
       } catch (err) {
@@ -34,20 +35,15 @@ const UserOrders = () => {
 
   const cancelOrder = async (orderId) => {
     try {
-      const res  = await fetch(`${ORDER_URL}/${orderId}/status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "cancelled" }),
-      });
-      const data = await res.json();
+      const res  = await api.put(`${ORDER_URL}/${orderId}/status`, { status: "cancelled" });
+      const data = res.data;
       if (!data.success) { setMessage(data.error || "Cannot cancel this order"); return; }
       const updated = orders.map((o) => o._id === orderId ? { ...o, status: "cancelled" } : o);
       setOrders(updated);
       applyFilter(activeFilter, updated);
       setMessage("Order cancelled successfully!");
     } catch (err) {
-      console.error(err);
-      setMessage("Error cancelling order.");
+      setMessage(err.response?.data?.error || "Error cancelling order.");
     }
     setTimeout(() => setMessage(""), 3000);
   };

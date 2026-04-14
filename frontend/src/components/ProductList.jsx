@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import { PROD_URL, getPriceRange } from "../utils/api";
+import { fetchCached } from "../utils/productCache";
 import "./ProductList.css";
 
 // Icon map for known categories; unknown ones get a default gem icon
@@ -52,9 +53,9 @@ const ProductList = ({ addToCart, searchQuery = "", navCategory = "all", onNavCa
   }, [navCategory]);
 
   useEffect(() => {
-    // Fetch products and dynamic price range in parallel
+    // Fetch products and dynamic price range in parallel, using cache
     Promise.all([
-      fetch(PROD_URL).then((r) => r.json()),
+      fetchCached(PROD_URL),
       getPriceRange(),
     ])
       .then(([data, range]) => {
@@ -211,12 +212,11 @@ const ProductList = ({ addToCart, searchQuery = "", navCategory = "all", onNavCa
             </div>
           ) : (
             <div className="product-grid">
-              {filtered.map((product, i) => (
+              {filtered.map((product) => (
                 <ProductCard
                   key={product._id}
                   product={product}
                   addToCart={addToCart}
-                  animDelay={i * 0.04}
                 />
               ))}
             </div>

@@ -192,7 +192,7 @@
   transform: translate(-50%, -50%);
   background: #ffffff;
   padding: 20px 25px;
-  width: 320px;
+  width: min(320px, calc(100vw - 32px));
   max-height: 70vh;
   overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
@@ -267,7 +267,6 @@
   position: relative;
 }
 
-/* ── RESPONSIVE ───────────────────────── */
 @media (max-width: 480px) {
   .cart-sidebar {
     width: 100%;
@@ -278,15 +277,11 @@
   .checkout-btn, .remove-btn { min-height: 44px; }
   .remove-popup {
     width: calc(100% - 32px);
-    left: 16px;
-    right: 16px;
-    transform: translate(0, -50%);
-    top: 50%;
+    /* left/transform already centers it via the base rule */
   }
 }
 
 @media (max-width: 360px) {
   .cart-sidebar { padding: 12px; }
   .item-name { font-size: 13px; }
-  .remove-popup { width: calc(100% - 24px); left: 12px; }
 }

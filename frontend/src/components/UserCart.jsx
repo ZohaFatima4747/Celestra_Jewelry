@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getUserId } from "../utils/auth";
 import { CART_URL, ORDER_URL } from "../utils/api";
 import { resolveImage } from "../utils/assetMap";
+import api from "../utils/axiosInstance";
 import "./UserCart.css";
 
 const UserCart = () => {
@@ -18,12 +19,9 @@ const UserCart = () => {
     if (!userId) return;
     setLoading(true);
     try {
-      const res  = await fetch(`${CART_URL}?userId=${userId}`);
-      const data = await res.json();
-      setCart(data);
-    } catch (err) {
-      console.error(err);
-    }
+      const res = await api.get(`${CART_URL}?userId=${userId}`);
+      setCart(res.data);
+    } catch { /* silent */ }
     setLoading(false);
   };
 
@@ -32,11 +30,7 @@ const UserCart = () => {
   const removeItem = async (cartItemId) => {
     const userId = getUserId();
     if (!userId) return;
-    await fetch(`${CART_URL}/remove`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, cartItemId }),
-    });
+    await api.post(`${CART_URL}/remove`, { userId, cartItemId });
     fetchCart();
   };
 
@@ -48,11 +42,7 @@ const UserCart = () => {
       const total = items.reduce((sum, i) => sum + i.product.price * i.qty, 0);
       return { ...prev, items, total };
     });
-    await fetch(`${CART_URL}/delete`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, cartItemId }),
-    });
+    await api.post(`${CART_URL}/delete`, { userId, cartItemId });
     fetchCart();
   };
 
@@ -61,35 +51,27 @@ const UserCart = () => {
     if (!userId) return;
     const productId = cart.items.find((i) => i._id === cartItemId)?.product._id;
     if (!productId) return;
-    await fetch(`${CART_URL}/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, productId }),
-    });
+    await api.post(`${CART_URL}/add`, { userId, productId });
     fetchCart();
   };
 
   const placeOrder = async () => {
     const userId = getUserId();
     if (!userId) return alert("Login first");
-    const res = await fetch(`${ORDER_URL}/complete-payment`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId,
-        customer: form,
-        items: cart.items.map((i) => ({
-          productId: i.product._id,
-          name: i.product.name,
-          price: i.product.price,
-          qty: i.qty,
-          selectedSize: i.selectedSize || null,
-          selectedColor: i.selectedColor || null,
-        })),
-        total: cart.total,
-      }),
+    const res = await api.post(`${ORDER_URL}/complete-payment`, {
+      userId,
+      customer: form,
+      items: cart.items.map((i) => ({
+        productId: i.product._id,
+        name: i.product.name,
+        price: i.product.price,
+        qty: i.qty,
+        selectedSize: i.selectedSize || null,
+        selectedColor: i.selectedColor || null,
+      })),
+      total: cart.total,
     });
-    return res.json();
+    return res.data;
   };
 
   const handleCOD = async () => {

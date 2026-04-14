@@ -5,6 +5,7 @@ const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs");
 const { adminAuth } = require("../middleware/auth");
+const logger = require("../utils/logger");
 
 const UPLOAD_DIR = path.join(__dirname, "../uploads");
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -74,8 +75,8 @@ router.post("/", adminAuth, upload.array("images", 10), async (req, res) => {
       variants: results,
     });
   } catch (err) {
-    console.error("[UPLOAD]", err);
-    res.status(500).json({ message: err.message });
+    logger.error({ err }, "[UPLOAD] failed");
+    res.status(500).json({ message: "Upload failed. Please try again." });
   }
 });
 

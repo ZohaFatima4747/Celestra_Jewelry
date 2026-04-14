@@ -3,6 +3,7 @@ import QuickViewModal from "./QuickViewModal";
 import { getUserId } from "../utils/auth";
 import { CART_URL, WISH_URL } from "../utils/api";
 import { resolveImage } from "../utils/assetMap";
+import api from "../utils/axiosInstance";
 import "./UserWishlist.css";
 
 const UserWishlist = ({ isDark = false }) => {
@@ -15,12 +16,9 @@ const UserWishlist = ({ isDark = false }) => {
     if (!userId) return;
     setLoading(true);
     try {
-      const res  = await fetch(`${WISH_URL}/${userId}`);
-      const data = await res.json();
-      if (data.success) setWishlist(data.wishlist);
-    } catch (err) {
-      console.error(err);
-    }
+      const res = await api.get(`${WISH_URL}/${userId}`);
+      if (res.data.success) setWishlist(res.data.wishlist);
+    } catch { /* silent */ }
     setLoading(false);
   };
 
@@ -30,20 +28,11 @@ const UserWishlist = ({ isDark = false }) => {
     const userId = getUserId();
     if (!userId) return alert("Login first");
     try {
-      await fetch(`${CART_URL}/add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, productId }),
-      });
-      await fetch(`${WISH_URL}/toggle`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, productId }),
-      });
+      await api.post(`${CART_URL}/add`, { userId, productId });
+      await api.post(`${WISH_URL}/toggle`, { userId, productId });
       setWishlist((prev) => prev.filter((item) => item.productId._id !== productId));
       alert("Product added to cart!");
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Failed to add to cart");
     }
   };
@@ -52,14 +41,9 @@ const UserWishlist = ({ isDark = false }) => {
     const userId = getUserId();
     if (!userId) return alert("Login first");
     try {
-      await fetch(`${WISH_URL}/toggle`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, productId }),
-      });
+      await api.post(`${WISH_URL}/toggle`, { userId, productId });
       setWishlist((prev) => prev.filter((item) => item.productId._id !== productId));
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Failed to remove");
     }
   };

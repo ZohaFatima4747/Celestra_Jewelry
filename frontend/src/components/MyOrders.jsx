@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ORDER_URL } from "../utils/api";
 import { getUserId, getUserEmail } from "../utils/auth";
+import api from "../utils/axiosInstance";
 import "./MyOrders.css";
 
 const STATUS_CONFIG = {
@@ -51,9 +52,10 @@ const MyOrders = ({ isDark }) => {
     const url = email
       ? `${ORDER_URL}/user/${userId}?email=${encodeURIComponent(email)}`
       : `${ORDER_URL}/user/${userId}`;
-    fetch(url)
-      .then((r) => r.json())
-      .then((data) => {
+    api.get(url)
+      .then((r) => {
+        // handle both plain array (user route) and paginated object (admin route)
+        const data = Array.isArray(r.data) ? r.data : (r.data.orders ?? []);
         setOrders(data);
         setLoading(false);
       })
@@ -64,24 +66,14 @@ const MyOrders = ({ isDark }) => {
     if (!window.confirm("Cancel this order?")) return;
     setCancelling(orderId);
     try {
-      const res = await fetch(
-        `${ORDER_URL}/${orderId}/status`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "cancelled" }),
-        },
-      );
-      const data = await res.json();
-      if (data.success)
+      const res = await api.put(`${ORDER_URL}/${orderId}/status`, { status: "cancelled" });
+      if (res.data.success)
         setOrders((prev) =>
-          prev.map((o) =>
-            o._id === orderId ? { ...o, status: "cancelled" } : o,
-          ),
+          prev.map((o) => o._id === orderId ? { ...o, status: "cancelled" } : o)
         );
-      else alert(data.error);
-    } catch {
-      alert("Error cancelling order");
+      else alert(res.data.error);
+    } catch (err) {
+      alert(err.response?.data?.error || "Error cancelling order");
     } finally {
       setCancelling(null);
     }

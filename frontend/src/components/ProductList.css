@@ -37,6 +37,7 @@
 /* ── SIDEBAR ── */
 .shop-sidebar {
   width: 200px;
+  min-width: 180px;
   flex-shrink: 0;
   padding: 0 24px 0 0;
   border-right: 1px solid var(--border);
@@ -304,10 +305,13 @@
 /* Responsive */
 @media (max-width: 1100px) {
   .product-grid { grid-template-columns: repeat(3, 1fr); }
+  .shop-layout { padding: 20px 24px 32px; }
+  .featured-header { padding: 28px 24px 0; }
+  .collections-section { padding: 40px 24px; }
 }
 @media (max-width: 900px) {
   .shop-layout { flex-direction: column; padding: 16px; }
-  .shop-sidebar { width: 100%; position: static; border-right: none; border-bottom: 1px solid var(--border); padding: 0 0 20px; display: none; }
+  .shop-sidebar { width: 100%; min-width: unset; position: static; border-right: none; border-bottom: 1px solid var(--border); padding: 0 0 20px; display: none; }
   .shop-sidebar.open { display: block; }
   .shop-main { padding-left: 0; padding-top: 16px; }
   .sidebar-toggle {
@@ -344,4 +348,5 @@
 @media (max-width: 360px) {
   .product-grid { grid-template-columns: 1fr; }
   .col-featured-title { font-size: 20px; }
+  .shop-layout { padding: 8px; }
 }

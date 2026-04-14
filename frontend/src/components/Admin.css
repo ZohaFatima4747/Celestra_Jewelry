@@ -53,9 +53,8 @@
 }
 
 .light .ad-sidebar {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.95);
   border-right: 1px solid rgba(0, 0, 0, 0.07);
-  backdrop-filter: blur(12px);
 }
 
 /* Logo */
@@ -319,7 +318,7 @@
 }
 
 .light .ad-user-chip {
-  background: rgba(255, 255, 255, 0.7);
+  background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
@@ -362,7 +361,7 @@
 }
 
 .light .ad-content {
-  background: rgba(255, 255, 255, 0.75);
+  background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.07);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
