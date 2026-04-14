@@ -97,7 +97,7 @@ router.post("/signup", async (req, res) => {
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "7d" }
     );
 
     await mergeGuestCart(user._id, guestCart);
@@ -123,7 +123,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "7d" }
     );
     const refreshToken = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
@@ -155,7 +155,7 @@ router.post("/refresh", async (req, res) => {
     const newToken = jwt.sign(
       { id: decoded.id, email: decoded.email, role: decoded.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "7d" }
     );
     res.status(200).json({ token: newToken });
   } catch {

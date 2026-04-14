@@ -36,11 +36,36 @@
     <meta name="twitter:image" content="https://www.celestrajewelry.com/og-image.jpg" />
     <meta name="twitter:image:alt" content="Celestra Jewelry – Luxury Handcrafted Jewelry" />
 
-    <!-- Preconnect to API server for faster image loads -->
-    <link rel="preconnect" href="http://localhost:1000" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+    <!-- Critical above-the-fold CSS inlined to eliminate render-blocking -->
+    <style>
+      *,*::before,*::after{box-sizing:border-box}
+      html{width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+      :root{--bg:#ffffff;--dark:#1a1030;--gold:#c8a060;--lavender:#f5f0ff;--border:#ede8f8;--muted:#9080b0;--text:#1a1030}
+      body{background:#fff;margin:0;font-family:"Inter",system-ui,sans-serif;font-weight:400;color:#1a1030;overflow-x:clip}
+      #root{width:100%}
+      img{max-width:100%;display:block}
+      button{cursor:pointer;font-family:"Inter",system-ui,sans-serif}
+      h1,h2,h3{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;margin:0}
+      .shop-wrapper{min-height:100vh;display:flex;flex-direction:column}
+      .navbar{width:100%;background:#fff;border-bottom:1px solid #ede8f8;position:sticky;top:0;z-index:900}
+      .navbar-inner{max-width:1320px;margin:0 auto;padding:0 32px;height:80px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+      .navbar-announce{width:100%;background:#1a1030;color:rgba(255,255,255,0.6);font-size:11px;padding:8px 40px;display:flex;align-items:center;justify-content:space-between}
+      .banner-wrap{width:100%;background:#fff;border-bottom:1px solid #ede8f8}
+      .banner-hero{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;min-height:440px;border-bottom:1px solid #ede8f8}
+      .banner-content{padding:56px 48px 56px 40px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid #ede8f8}
+      .banner-title{font-family:"Cormorant Garamond",Georgia,serif;font-size:clamp(34px,4vw,54px);font-weight:600;color:#1a1030;line-height:1.1;margin:0 0 20px}
+      .banner-wordmark{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 40px}
+      .banner-logo-img{width:100%;max-width:420px;height:auto;object-fit:contain}
+    </style>
+
+    <!-- Preload LCP hero image -->
+    <link rel="preload" as="image" href="/product-images/logo.jpeg" />
+    <!-- Preconnect for Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Google Fonts — non-render-blocking -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500&display=swap" /></noscript>
   </head>
   <body>
     <div id="root"></div>

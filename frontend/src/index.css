@@ -1,4 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500&display=swap");
+/* Font fallbacks while Google Fonts loads */
+body { font-family: "Inter", system-ui, sans-serif; }
+h1, h2, h3 { font-family: "Cormorant Garamond", Georgia, serif; }
 
 *, *::before, *::after { box-sizing: border-box; }
 

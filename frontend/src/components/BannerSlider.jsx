@@ -1,6 +1,5 @@
 import React from "react";
 import "./BannerSlider.css";
-import logo from "../assets/logo.jpeg";
 
 const TRUST = [
   { icon: "✦", text: "Handcrafted Jewellery" },
@@ -13,7 +12,7 @@ const BannerSlider = ({ onShopNow }) => (
   <div className="banner-wrap">
     <div className="banner-hero">
       <div className="banner-content">
-        <div className="banner-tag">— New Collection &nbsp;·&nbsp; Celestra · Spring 2025</div>
+        <div className="banner-tag">— New Collection &nbsp;·&nbsp; Celestra · 2026</div>
         <h1 className="banner-title">
           Jewellery born<br />from the <em>night sky</em>
         </h1>
@@ -42,7 +41,7 @@ const BannerSlider = ({ onShopNow }) => (
 
       {/* Logo */}
       <div className="banner-wordmark">
-        <img src={logo} alt="Celestra Logo" className="banner-logo-img" />
+        <img src="/product-images/logo.jpeg" alt="Celestra Logo" className="banner-logo-img" width="400" height="400" loading="eager" fetchpriority="high" />
       </div>
     </div>
 
