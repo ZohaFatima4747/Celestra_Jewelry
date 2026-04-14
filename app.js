@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const compression = require("compression");
 const connectDB = require("./conn/connection");
 
 const cartRoutes     = require("./routes/cartRoutes");
@@ -17,13 +18,17 @@ const contactUsRoutes = require("./routes/contactUsRoutes");
 const app = express();
 
 // Middleware
+app.use(compression()); // gzip dynamic responses
 app.use(express.json());
 app.use(cors());
 
-// Static files
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/product-images", express.static(path.join(__dirname, "../frontend/src/assets")));
-app.use("/assets",  express.static(path.join(__dirname, "../frontend/dist/assets")));
+// Static files with long-term cache headers
+const staticOpts = { maxAge: "1y", immutable: true };
+app.use("/uploads", express.static(path.join(__dirname, "uploads"), { maxAge: "7d" }));
+// Legacy product images served from src/assets (no immutable — filenames can change)
+app.use("/product-images", express.static(path.join(__dirname, "../frontend/public/product-images"), { maxAge: "7d" }));
+// Built assets get immutable long-term cache (content-hashed filenames)
+app.use("/assets", express.static(path.join(__dirname, "../frontend/dist/assets"), staticOpts));
 
 // Database
 connectDB();
