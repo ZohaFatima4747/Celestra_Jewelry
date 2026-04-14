@@ -15,10 +15,17 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:1000',
         changeOrigin: true,
-        // Required for ngrok free tier — bypasses the browser warning interstitial
         headers: {
           'ngrok-skip-browser-warning': 'true',
         },
+      },
+      '/uploads': {
+        target: 'http://localhost:1000',
+        changeOrigin: true,
+      },
+      '/product-images': {
+        target: 'http://localhost:1000',
+        changeOrigin: true,
       },
     },
   },

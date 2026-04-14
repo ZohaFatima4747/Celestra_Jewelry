@@ -9,8 +9,12 @@ export default function Customers() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([api.get('/admin/users'), api.get('/admin/orders')])
-      .then(([u, o]) => { setUsers(u.data); setOrders(o.data); })
+    Promise.all([api.get('/admin/users?limit=500'), api.get('/admin/orders?limit=500')])
+      .then(([u, o]) => {
+        setUsers(Array.isArray(u.data) ? u.data : (u.data.users ?? []));
+        setOrders(Array.isArray(o.data) ? o.data : (o.data.orders ?? []));
+      })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -81,6 +85,37 @@ export default function Customers() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile card list */}
+      <div className="customers-cards">
+        {filtered.length === 0 && <p className="empty-row">No customers found</p>}
+        {filtered.map((u) => (
+          <div key={u._id} className="customer-card">
+            <div className="customer-card__top">
+              <span className="customer-name">{u.name}</span>
+              <div className="badge-group">
+                <span className={`type-badge ${isReturning(u.email) ? 'returning' : 'new'}`}>
+                  {isReturning(u.email) ? 'Returning' : 'New'}
+                </span>
+                {u.isGuest && <span className="type-badge guest">Guest</span>}
+              </div>
+            </div>
+            <div className="customer-card__row"><span>Email</span><span>{u.email}</span></div>
+            {u.phone && <div className="customer-card__row"><span>Phone</span><span>{u.phone}</span></div>}
+            {(u.city || u.province) && (
+              <div className="customer-card__row">
+                <span>Location</span>
+                <span>{[u.city, u.province].filter(Boolean).join(', ')}</span>
+              </div>
+            )}
+            {u.address && <div className="customer-card__row"><span>Address</span><span>{u.address}</span></div>}
+            <div className="customer-card__row"><span>Orders</span><strong>{orderCount(u.email)}</strong></div>
+            <div className="customer-card__actions">
+              <button className="del-btn" onClick={() => del(u._id)}>Delete</button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

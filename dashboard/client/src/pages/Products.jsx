@@ -14,7 +14,10 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const load = () => api.get('/admin/products').then((r) => setProducts(r.data)).finally(() => setLoading(false));
+  const load = () => api.get('/admin/products?limit=200').then((r) => {
+    const list = Array.isArray(r.data) ? r.data : (r.data.products ?? []);
+    setProducts(list);
+  }).catch(() => setProducts([])).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
 
   const openAdd = () => { setForm(emptyForm); setModal('add'); };

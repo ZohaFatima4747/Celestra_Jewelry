@@ -52,3 +52,26 @@
   .page-title { font-size: 1.1rem; }
   .data-table th, .data-table td { padding: 10px 12px; }
 }
+
+/* ── Mobile card layout ── */
+.alert-cards { display: none; flex-direction: column; gap: 10px; }
+.alert-card {
+  background: #fff; border-radius: 12px; border: 1px solid #e8e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.alert-card__top {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 6px; margin-bottom: 2px;
+}
+.alert-card__row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 0.85rem; gap: 8px;
+}
+.alert-card__row > span:first-child { color: #888; font-weight: 500; flex-shrink: 0; }
+.alert-card__row > span:last-child, .alert-card__row > strong { color: #1a1a2e; text-align: right; }
+
+@media (max-width: 1024px) {
+  .table-wrap { display: none; }
+  .alert-cards { display: flex; }
+}

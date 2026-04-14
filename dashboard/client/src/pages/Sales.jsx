@@ -6,12 +6,17 @@ import './Sales.css';
 export default function Sales() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    api.get('/admin/sales').then((r) => setData(r.data)).finally(() => setLoading(false));
+    api.get('/admin/sales')
+      .then((r) => setData(r.data))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="page-loading">Loading sales data...</div>;
+  if (error)   return <div className="page-loading">Failed to load sales data.</div>;
 
   return (
     <div className="sales-page">

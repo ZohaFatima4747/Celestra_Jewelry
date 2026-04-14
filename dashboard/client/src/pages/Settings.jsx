@@ -15,6 +15,7 @@ export default function Settings() {
   const handleSave = async (e) => {
     e.preventDefault();
     setMsg(''); setError('');
+    if (!admin?.id) { setError('Session expired. Please log in again.'); return; }
     if (form.password && form.password !== form.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -23,7 +24,7 @@ export default function Settings() {
     try {
       const payload = { name: form.name, email: form.email };
       if (form.password) payload.password = form.password;
-      await api.put(`/v1/auth/user/${admin?.id}`, payload);
+      await api.put(`/v1/auth/user/${admin.id}`, payload);
       setMsg('Profile updated successfully.');
       setForm((f) => ({ ...f, password: '', confirmPassword: '' }));
     } catch (err) {

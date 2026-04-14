@@ -254,7 +254,7 @@
 .save-btn:active { transform: translateY(0); }
 .save-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .prod-title { font-size: 1.25rem; }
   .prod-table-wrap { display: none; }
   .prod-cards { display: flex; }

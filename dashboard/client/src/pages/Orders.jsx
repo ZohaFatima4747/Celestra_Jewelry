@@ -108,11 +108,12 @@ export default function Orders() {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    api.get('/admin/orders').then((r) => {
-      const sorted = [...r.data].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    api.get('/admin/orders?limit=100').then((r) => {
+      const list = Array.isArray(r.data) ? r.data : (r.data.orders ?? []);
+      const sorted = [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setOrders(sorted);
       setFiltered(sorted);
-    }).finally(() => setLoading(false));
+    }).catch(() => setOrders([])).finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -228,6 +229,37 @@ export default function Orders() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile card list */}
+      <div className="orders-cards">
+        {filtered.length === 0 && <p className="empty-row">No orders found</p>}
+        {filtered.map((o) => (
+          <div key={o._id} className="order-card">
+            <div className="order-card__top">
+              <span className="mono">#{o._id.slice(-8).toUpperCase()}</span>
+              <span className="status-badge" style={{ background: statusColor[o.status] + '22', color: statusColor[o.status] }}>
+                {o.status}
+              </span>
+            </div>
+            <div className="order-card__row"><span>Customer</span><span>{o.customer?.name || '—'}</span></div>
+            <div className="order-card__row"><span>Email</span><span>{o.customer?.email || '—'}</span></div>
+            {o.customer?.phone && <div className="order-card__row"><span>Phone</span><span>{o.customer.phone}</span></div>}
+            <div className="order-card__row"><span>Items</span><span>{o.items?.length} item(s)</span></div>
+            <div className="order-card__row"><span>Total</span><strong>PKR {o.total?.toLocaleString()}</strong></div>
+            <div className="order-card__row"><span>Date</span><span>{new Date(o.createdAt).toLocaleDateString()}</span></div>
+            <div className="order-card__actions">
+              <select
+                className="status-select"
+                value={o.status}
+                onChange={(e) => updateStatus(o._id, e.target.value)}
+              >
+                {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <button className="view-btn" onClick={() => setSelected(o)}>View</button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {selected && (

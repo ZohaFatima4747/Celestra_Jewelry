@@ -41,3 +41,30 @@
   .page-title { font-size: 1.1rem; }
   .cstat-card { min-width: calc(50% - 5px); }
 }
+
+/* ── Mobile card layout ── */
+.customers-cards { display: none; flex-direction: column; gap: 12px; }
+.customer-card {
+  background: #fff; border-radius: 12px; border: 1px solid #e8e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.customer-card__top {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 6px; margin-bottom: 4px;
+}
+.customer-card__row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 0.85rem; gap: 8px;
+}
+.customer-card__row > span:first-child { color: #888; font-weight: 500; flex-shrink: 0; }
+.customer-card__row > span:last-child, .customer-card__row > strong { color: #1a1a2e; text-align: right; word-break: break-word; }
+.customer-card__actions {
+  margin-top: 6px; padding-top: 10px; border-top: 1px solid #f0f0f0;
+}
+
+@media (max-width: 1024px) {
+  .table-wrap { display: none; }
+  .customers-cards { display: flex; }
+  .search-input { max-width: 100%; }
+}

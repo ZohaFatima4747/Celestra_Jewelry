@@ -110,3 +110,32 @@
   .page-title { font-size: 1.1rem; }
   .order-modal { border-radius: 12px; }
 }
+
+/* ── Mobile card layout ── */
+.orders-cards { display: none; flex-direction: column; gap: 12px; }
+.order-card {
+  background: #fff; border-radius: 12px; border: 1px solid #e8e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.order-card__top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.order-card__row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 0.85rem; gap: 8px;
+}
+.order-card__row > span:first-child { color: #888; font-weight: 500; flex-shrink: 0; }
+.order-card__row > span:last-child, .order-card__row > strong { color: #1a1a2e; text-align: right; word-break: break-word; }
+.order-card__actions {
+  display: flex; gap: 8px; margin-top: 6px; padding-top: 10px;
+  border-top: 1px solid #f0f0f0; align-items: center;
+}
+.order-card__actions .status-select { flex: 1; }
+.order-card__actions .view-btn { flex-shrink: 0; }
+
+@media (max-width: 1024px) {
+  .table-wrap { display: none; }
+  .orders-cards { display: flex; }
+}

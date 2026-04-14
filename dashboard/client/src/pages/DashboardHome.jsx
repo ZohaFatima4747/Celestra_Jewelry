@@ -29,11 +29,13 @@ export default function DashboardHome() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([api.get('/admin/stats'), api.get('/admin/products')])
+    Promise.all([api.get('/admin/stats'), api.get('/admin/products?limit=200')])
       .then(([s, p]) => {
         setStats(s.data);
-        setProducts(p.data);
+        const list = Array.isArray(p.data) ? p.data : (p.data.products ?? []);
+        setProducts(list);
       })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
