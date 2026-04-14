@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -57,21 +57,27 @@ app.use(sanitizeMiddleware);
 app.use("/api", generalLimiter);
 
 // ── Static files ──────────────────────────────────────────────────────────────
+// Override CORP header for image routes so cross-origin pages (dashboard dev server) can load them
+const corpCrossOrigin = (_req, res, next) => {
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  next();
+};
+
 // Uploaded product images — content-addressed by timestamp prefix, safe to cache 30 days
-app.use("/uploads", express.static(path.join(__dirname, "uploads"), {
+app.use("/uploads", corpCrossOrigin, express.static(path.join(__dirname, "uploads"), {
   maxAge: "30d",
-  immutable: false, // filenames can be reused if re-uploaded
+  immutable: false,
   etag: true,
   lastModified: true,
 }));
 // Legacy product images from public folder
-app.use("/product-images", express.static(path.join(__dirname, "../frontend/public/product-images"), {
+app.use("/product-images", corpCrossOrigin, express.static(path.join(__dirname, "../frontend/public/product-images"), {
   maxAge: "7d",
   etag: true,
   lastModified: true,
 }));
 // Built frontend assets — content-hashed filenames, safe to cache forever
-app.use("/assets", express.static(path.join(__dirname, "../frontend/dist/assets"), {
+app.use("/assets", corpCrossOrigin, express.static(path.join(__dirname, "../frontend/dist/assets"), {
   maxAge: "1y",
   immutable: true,
 }));
