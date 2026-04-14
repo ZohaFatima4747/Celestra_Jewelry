@@ -2,6 +2,7 @@ const router = require("express").Router();
 const nodemailer = require("nodemailer");
 const ContactMessage = require("../models/ContactMessage");
 const { adminAuth } = require("../middleware/auth");
+const logger = require("../utils/logger");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -201,7 +202,7 @@ router.post("/", async (req, res) => {
 
     res.json({ success: true, message: "Your message has been sent successfully." });
   } catch (err) {
-    console.error("[contact-us] mail error:", err);
+    logger.error({ err }, "[contact-us] mail error");
     res.status(500).json({ error: "Failed to send message. Please try again later." });
   }
 });
@@ -244,7 +245,7 @@ router.post("/reply", adminAuth, async (req, res) => {
   if (!replyMessage?.trim()) return res.status(400).json({ error: "Reply message is required." });
 
   const htmlBody = userReplyHtml({ name, email, subject, originalMessage, replyMessage });
-  console.log("[contact-us/reply] sending HTML email to:", email, "| html length:", htmlBody.length);
+  logger.debug({ email, htmlLength: htmlBody.length }, "[contact-us/reply] sending reply");
 
   try {
     await transporter.sendMail({
@@ -260,7 +261,7 @@ router.post("/reply", adminAuth, async (req, res) => {
 
     res.json({ success: true, message: "Reply sent successfully." });
   } catch (err) {
-    console.error("[contact-us/reply] mail error:", err);
+    logger.error({ err }, "[contact-us/reply] mail error");
     res.status(500).json({ error: "Failed to send reply. Please try again later." });
   }
 });

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
+const logger = require("../utils/logger");
 
 // GET /api/products — supports ?category=&search=&minPrice=&maxPrice=&sort=&limit=
 router.get("/", async (req, res) => {
@@ -31,7 +32,7 @@ router.get("/", async (req, res) => {
     const products = await query.lean();
     res.json(products);
   } catch (err) {
-    console.error(err);
+    logger.error({ err }, "GET /products failed");
     res.status(500).json({ error: "Server error" });
   }
 });

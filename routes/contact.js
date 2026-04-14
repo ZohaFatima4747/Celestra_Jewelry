@@ -5,6 +5,7 @@ const Cart = require("../models/Cart");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { authMiddleware } = require("../middleware/auth");
+const logger = require("../utils/logger");
 
 // ── CHECK if email belongs to a guest account ─────────────────────────────────
 router.get("/check-guest", async (req, res) => {
@@ -127,8 +128,8 @@ router.post("/login", async (req, res) => {
     );
     const refreshToken = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+      { expiresIn: "30d" }
     );
 
     // Remove any stale login sessions for this user before creating a new one
@@ -138,8 +139,8 @@ router.post("/login", async (req, res) => {
 
     res.status(200).json({ message: "Login successful", token, refreshToken, userId: user._id });
   } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ message: "Server error", detail: err.message });
+    logger.error({ err }, "Login error");
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -148,7 +149,7 @@ router.post("/refresh", async (req, res) => {
   const { refreshToken } = req.body;
   if (!refreshToken) return res.status(401).json({ message: "No refresh token provided" });
   try {
-    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);
     const record = await Login.findOne({ userId: decoded.id, refreshToken });
     if (!record) return res.status(403).json({ message: "Invalid refresh token" });
 
@@ -199,8 +200,8 @@ router.put("/user/:id", authMiddleware, async (req, res) => {
     if (!updated) return res.status(404).json({ message: "User not found" });
     res.status(200).json({ message: "User updated successfully", user: updated });
   } catch (err) {
-    console.error("Update user error:", err);
-    res.status(500).json({ message: "Server error", detail: err.message });
+    logger.error({ err }, "Update user error");
+    res.status(500).json({ message: "Server error" });
   }
 });
 

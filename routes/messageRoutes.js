@@ -2,9 +2,19 @@ const express = require('express');
 const router = express.Router();
 const Message = require('../models/Message');
 const Order = require('../models/Order');
+const { authMiddleware } = require('../middleware/auth');
 
-// GET all messages for a user — also supports ?email= for guest fallback
+// All message routes require authentication
+router.use(authMiddleware);
+
+// GET /api/messages/user/:userId
+// Users can only fetch their own messages (enforced by comparing token userId)
 router.get('/user/:userId', async (req, res) => {
+  // Ensure the authenticated user is requesting their own messages
+  if (req.user.id !== req.params.userId && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
   try {
     let messages = await Message.find({ userId: req.params.userId }).sort({ createdAt: -1 });
 
@@ -25,32 +35,40 @@ router.get('/user/:userId', async (req, res) => {
     }
 
     res.json(messages);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// PATCH mark a single message as read
+// PATCH /api/messages/:messageId/read
 router.patch('/:messageId/read', async (req, res) => {
   try {
-    const message = await Message.findByIdAndUpdate(
-      req.params.messageId,
-      { isRead: true },
-      { new: true }
-    );
+    const message = await Message.findById(req.params.messageId);
     if (!message) return res.status(404).json({ error: 'Message not found' });
+
+    // Only the owner or admin can mark as read
+    if (message.userId !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    message.isRead = true;
+    await message.save();
     res.json(message);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// PATCH mark all messages as read for a user
+// PATCH /api/messages/user/:userId/read-all
 router.patch('/user/:userId/read-all', async (req, res) => {
+  if (req.user.id !== req.params.userId && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
   try {
     await Message.updateMany({ userId: req.params.userId }, { isRead: true });
     res.json({ success: true });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Server error' });
   }
 });
