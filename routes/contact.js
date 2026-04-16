@@ -80,7 +80,7 @@ router.post("/signup", async (req, res) => {
     const existing = await Contact.findOne({ email });
 
     if (existing && !existing.isGuest)
-      return res.status(400).json({ message: "Email already exists" });
+      return res.status(400).json({ message: "Email already exists", action: "LOGIN_SUGGEST" });
 
     const hashed = await bcrypt.hash(password, 10);
     let user;
