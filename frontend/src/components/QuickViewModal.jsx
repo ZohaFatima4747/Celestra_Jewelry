@@ -1,30 +1,30 @@
 import { useState, useEffect } from "react";
-import { WISH_URL } from "../utils/api";
 import ProductImage from "./ProductImage";
+import {
+  toggleWishlist as doToggleWishlist,
+  isGuestWishlisted,
+  fetchUserWishlist,
+} from "../utils/wishlist";
+import { getUserId } from "../utils/auth";
 import "./QuickViewModal.css";
 
 const QuickViewModal = ({ product, onClose, addToCart, userId }) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
-    if (!product || !userId) return;
-    fetch(`${WISH_URL}/${userId}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success)
-          setIsWishlisted(data.wishlist.some((p) => p.productId._id === product._id));
-      });
-  }, [product, userId]);
+    if (!product) return;
+    if (userId) {
+      fetchUserWishlist()
+        .then((list) => setIsWishlisted(list.some((p) => p.productId._id === product._id)))
+        .catch(() => {});
+    } else {
+      setIsWishlisted(isGuestWishlisted(product._id));
+    }
+  }, [product?._id, userId]);
 
-  const toggleWishlist = () => {
-    if (!userId) { alert("Login first"); return; }
-    fetch(`${WISH_URL}/toggle`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, productId: product._id }),
-    })
-      .then((r) => r.json())
-      .then((data) => { if (data.success) setIsWishlisted((p) => !p); });
+  const toggleWishlist = async () => {
+    const added = await doToggleWishlist(product._id);
+    setIsWishlisted(added);
   };
 
   if (!product) return null;

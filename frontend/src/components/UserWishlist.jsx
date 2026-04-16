@@ -1,24 +1,31 @@
 import { useEffect, useState } from "react";
 import QuickViewModal from "./QuickViewModal";
 import { getUserId } from "../utils/auth";
-import { CART_URL, WISH_URL } from "../utils/api";
+import { CART_URL } from "../utils/api";
 import { resolveImage } from "../utils/assetMap";
 import api from "../utils/axiosInstance";
+import {
+  fetchUserWishlist,
+  fetchGuestWishlistProducts,
+  toggleWishlist as doToggleWishlist,
+  getGuestWishlist,
+  setGuestWishlist,
+} from "../utils/wishlist";
 import "./UserWishlist.css";
 
 const UserWishlist = ({ isDark = false }) => {
-  const [wishlist, setWishlist]           = useState([]);
+  const [wishlist, setWishlist]                 = useState([]);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
-  const [loading, setLoading]             = useState(false);
+  const [loading, setLoading]                   = useState(false);
 
   const fetchWishlist = async () => {
-    const userId = getUserId();
-    if (!userId) return;
     setLoading(true);
-    try {
-      const res = await api.get(`${WISH_URL}/${userId}`);
-      if (res.data.success) setWishlist(res.data.wishlist);
-    } catch { /* silent */ }
+    const userId = getUserId();
+    if (userId) {
+      setWishlist(await fetchUserWishlist());
+    } else {
+      setWishlist(await fetchGuestWishlistProducts());
+    }
     setLoading(false);
   };
 
@@ -26,26 +33,31 @@ const UserWishlist = ({ isDark = false }) => {
 
   const addToCart = async (productId) => {
     const userId = getUserId();
-    if (!userId) return alert("Login first");
+    if (!userId) {
+      const product = wishlist.find((i) => i.productId._id === productId)?.productId;
+      if (!product) return;
+      try {
+        const saved = JSON.parse(localStorage.getItem("guestCart") || "[]");
+        const existing = saved.find((i) => i.product._id === productId);
+        if (existing) existing.qty += 1;
+        else saved.push({ _id: `guest_${productId}`, product, qty: 1, selectedSize: null, selectedColor: null });
+        localStorage.setItem("guestCart", JSON.stringify(saved));
+        setGuestWishlist(getGuestWishlist().filter((id) => id !== productId));
+        setWishlist((prev) => prev.filter((i) => i.productId._id !== productId));
+      } catch { /* silent */ }
+      return;
+    }
     try {
       await api.post(`${CART_URL}/add`, { userId, productId });
-      await api.post(`${WISH_URL}/toggle`, { userId, productId });
-      setWishlist((prev) => prev.filter((item) => item.productId._id !== productId));
-      alert("Product added to cart!");
-    } catch {
-      alert("Failed to add to cart");
-    }
+      await doToggleWishlist(productId);
+      setWishlist((prev) => prev.filter((i) => i.productId._id !== productId));
+    } catch { /* silent */ }
   };
 
   const removeFromWishlist = async (productId) => {
-    const userId = getUserId();
-    if (!userId) return alert("Login first");
-    try {
-      await api.post(`${WISH_URL}/toggle`, { userId, productId });
-      setWishlist((prev) => prev.filter((item) => item.productId._id !== productId));
-    } catch {
-      alert("Failed to remove");
-    }
+    await doToggleWishlist(productId);
+    if (!getUserId()) setGuestWishlist(getGuestWishlist().filter((id) => id !== productId));
+    setWishlist((prev) => prev.filter((i) => i.productId._id !== productId));
   };
 
   return (

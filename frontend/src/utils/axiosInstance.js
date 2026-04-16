@@ -28,11 +28,15 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear stale auth and bounce to login
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("userId");
-      window.location.href = "/login";
+      const token = localStorage.getItem("token");
+      // Only redirect to login if the user actually had a session token
+      // Guest users will naturally get 401s on protected routes — ignore them
+      if (token) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("userId");
+        window.location.href = "/";
+      }
     }
     return Promise.reject(error);
   }

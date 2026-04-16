@@ -8,8 +8,13 @@ import ProductImage from "./ProductImage";
 import SEO from "./SEO";
 import { useCart } from "../context/CartContext";
 import { getUserId } from "../utils/auth";
-import { PROD_URL, WISH_URL } from "../utils/api";
+import { PROD_URL } from "../utils/api";
 import { fetchCached } from "../utils/productCache";
+import {
+  toggleWishlist as doToggleWishlist,
+  isGuestWishlisted,
+  fetchUserWishlist,
+} from "../utils/wishlist";
 import "./ProductDetail.css";
 
 const ProductDetail = () => {
@@ -63,15 +68,17 @@ const ProductDetail = () => {
     return () => { cancelled = true; };
   }, [id]);
 
-  // Fetch wishlist status — runs in parallel with product fetch
+  // Fetch wishlist status — runs after product loads
   useEffect(() => {
+    if (!product) return;
     const userId = getUserId();
-    if (!userId || !product) return;
-    fetchCached(`${WISH_URL}/${userId}`)
-      .then((data) => {
-        if (data.success) setIsWishlisted(data.wishlist.some((p) => p.productId._id === product._id));
-      })
-      .catch(() => {});
+    if (userId) {
+      fetchUserWishlist()
+        .then((list) => setIsWishlisted(list.some((p) => p.productId._id === product._id)))
+        .catch(() => {});
+    } else {
+      setIsWishlisted(isGuestWishlisted(product._id));
+    }
   }, [product?._id]);
 
   // Sync cart on mount
@@ -99,16 +106,9 @@ const ProductDetail = () => {
     alert(message);
   };
 
-  const toggleWishlist = () => {
-    const userId = getUserId();
-    if (!userId) { alert("Login first"); return; }
-    fetch(`${WISH_URL}/toggle`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, productId: product._id }),
-    })
-      .then((r) => r.json())
-      .then((data) => { if (data.success) setIsWishlisted((p) => !p); });
+  const toggleWishlist = async () => {
+    const added = await doToggleWishlist(product._id);
+    setIsWishlisted(added);
   };
 
   // ── Loading / not found ────────────────────────────────────

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Form.css";
 import logo from "../assets/logo.jpeg";
 import { AUTH_URL } from "../utils/api";
+import { mergeWishlistOnAuth } from "../utils/wishlist";
 
 const BASE_URL = AUTH_URL;
 
@@ -107,11 +108,19 @@ const ContactForm = ({ onClose, setCartItems }) => {
 
         if (savedCart && setCartItems) setCartItems(JSON.parse(savedCart));
 
+        // Merge guest wishlist into user account
+        await mergeWishlistOnAuth();
+
         if (role === "admin") {
           navigate("/owner");
         } else {
           navigate("/admin");
         }
+      } else if (data.action === "LOGIN_SUGGEST") {
+        setIsError(true);
+        setResponseMsg(data.message || "Email already exists.");
+        // Switch to login flow with email pre-filled
+        setFlow("login");
       } else {
         setIsError(true);
         setResponseMsg(data.message || "Something went wrong.");
@@ -232,6 +241,15 @@ const ContactForm = ({ onClose, setCartItems }) => {
           {responseMsg && (
             <p className={`cf-msg ${isError ? "cf-msg--error" : "cf-msg--success"}`}>
               {responseMsg}
+            </p>
+          )}
+
+          {/* LOGIN_SUGGEST: show a quick-switch link */}
+          {isError && responseMsg && flow === "login" && (
+            <p className="cf-toggle" style={{ marginTop: 0 }}>
+              <span onClick={() => { setIsError(false); setResponseMsg(""); }}>
+                Login with this email →
+              </span>
             </p>
           )}
 
