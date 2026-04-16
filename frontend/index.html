@@ -39,16 +39,16 @@
     <!-- Critical above-the-fold CSS inlined to eliminate render-blocking -->
     <style>
       *,*::before,*::after{box-sizing:border-box}
-      html{width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+      html{width:100%;overflow-x:clip;-webkit-text-size-adjust:100%;text-size-adjust:100%}
       :root{--bg:#ffffff;--dark:#1a1030;--gold:#c8a060;--lavender:#f5f0ff;--border:#ede8f8;--muted:#9080b0;--text:#1a1030}
-      body{background:#fff;margin:0;font-family:"Inter",system-ui,sans-serif;font-weight:400;color:#1a1030;overflow-x:hidden;overscroll-behavior-x:none}
-      #root{width:100%;max-width:100vw;overflow-x:hidden}
+      body{background:#fff;margin:0;font-family:"Inter",system-ui,sans-serif;font-weight:400;color:#1a1030;overscroll-behavior-x:none}
+      #root{width:100%;max-width:100vw}
       img{max-width:100%;display:block}
       button{cursor:pointer;font-family:"Inter",system-ui,sans-serif}
       h1,h2,h3{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;margin:0}
       input,select,textarea{font-size:16px}
       .shop-wrapper{min-height:100vh;display:flex;flex-direction:column}
-      .navbar{width:100%;background:#fff;border-bottom:1px solid #ede8f8;position:sticky;top:0;z-index:900}
+      .navbar{width:100%;background:#fff;border-bottom:1px solid #ede8f8}
       .navbar-inner{max-width:1320px;margin:0 auto;padding:0 32px;height:80px;display:flex;align-items:center;justify-content:space-between;gap:16px}
       .navbar-announce{width:100%;background:#1a1030;color:rgba(255,255,255,0.6);font-size:11px;padding:8px 40px;display:flex;align-items:center;justify-content:space-between}
       .banner-wrap{width:100%;background:#fff;border-bottom:1px solid #ede8f8}

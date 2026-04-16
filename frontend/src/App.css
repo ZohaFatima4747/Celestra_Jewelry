@@ -1,4 +1,11 @@
-.shop-wrapper { min-height: 100vh; display: flex; flex-direction: column; }
+.shop-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* Must NOT have height, overflow, or transform — these create internal scroll containers */
+  height: auto;
+  overflow: visible;
+}
 
 /* ── Payment overlay ── */
 .payment-overlay {

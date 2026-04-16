@@ -1,5 +1,6 @@
 /* ── TOPBAR ── */
 .navbar-announce {
+  position: static !important;
   width: 100%;
   background: var(--dark);
   color: rgba(255,255,255,0.6);
@@ -23,12 +24,10 @@
 
 /* ── NAVBAR ── */
 .navbar {
+  position: static !important;
   width: 100%;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 900;
 }
 
 .navbar-inner {
