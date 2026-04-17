@@ -12,6 +12,7 @@ import Alerts from './pages/Alerts';
 import Settings from './pages/Settings';
 import Notifications from './pages/Notifications';
 import ContactMessages from './pages/ContactMessages';
+import ManualOrder from './pages/ManualOrder';
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
           >
             <Route index element={<DashboardHome />} />
             <Route path="orders" element={<Orders />} />
+            <Route path="orders/manual" element={<ManualOrder />} />
             <Route path="products" element={<Products />} />
             <Route path="customers" element={<Customers />} />
             <Route path="sales" element={<Sales />} />

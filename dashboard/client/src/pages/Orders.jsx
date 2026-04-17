@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import './Orders.css';
 
-const STATUSES = ['pending COD', 'shipped', 'delivered', 'cancelled'];
+const STATUSES = ['pending COD', 'shipped', 'delivered', 'cancelled', 'completed'];
 
 const statusColor = {
   'pending COD': '#e67e22',
   shipped:       '#3498db',
   delivered:     '#2ecc71',
   cancelled:     '#e74c3c',
+  completed:     '#9b59b6',
 };
 
 function OrderDetailModal({ order, onClose, onStatusChange }) {
@@ -63,6 +65,12 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
                   {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
+              {order.orderType === 'manual' && (
+                <>
+                  <div><label>Type</label><span style={{ color: '#4361ee', fontWeight: 700 }}>Manual / Offline</span></div>
+                  <div><label>Profit</label><span style={{ color: '#2ecc71', fontWeight: 700 }}>PKR {order.profit?.toLocaleString() ?? '—'}</span></div>
+                </>
+              )}
             </div>
           </section>
 
@@ -159,7 +167,10 @@ export default function Orders() {
     <div className="orders-page">
       <div className="page-header">
         <h2 className="page-title">Orders Management</h2>
-        <button className="export-btn" onClick={exportCSV}>⬇ Export CSV</button>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <Link to="/dashboard/orders/manual" className="export-btn" style={{ textDecoration: 'none' }}>🧾 New Manual Order</Link>
+          <button className="export-btn" onClick={exportCSV}>⬇ Export CSV</button>
+        </div>
       </div>
 
       <div className="filters">
@@ -187,7 +198,10 @@ export default function Orders() {
             )}
             {filtered.map((o) => (
               <tr key={o._id}>
-                <td className="mono">#{o._id.slice(-8).toUpperCase()}</td>
+                <td className="mono">
+                  #{o._id.slice(-8).toUpperCase()}
+                  {o.orderType === 'manual' && <span className="manual-badge">manual</span>}
+                </td>
                 <td>
                   <div className="customer-name">{o.customer?.name}</div>
                   <div className="customer-email">{o.customer?.email}</div>
@@ -197,8 +211,7 @@ export default function Orders() {
                       {[o.customer.city, o.customer.province].filter(Boolean).join(', ')}
                     </div>
                   )}
-                </td>
-                <td>
+                </td>                <td>
                   <div>{o.items?.length} item(s)</div>
                   <div className="order-product-names">
                     {o.items?.map((item, i) => (

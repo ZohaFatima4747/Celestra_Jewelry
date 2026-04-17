@@ -19,8 +19,8 @@ router.get("/stats", adminAuth, async (_req, res) => {
         $group: {
           _id: null,
           totalOrders:      { $sum: 1 },
-          totalRevenue:     { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, "$total", 0] } },
-          completedOrders:  { $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] } },
+          totalRevenue:     { $sum: { $cond: [{ $in: ["$status", ["delivered", "completed"]] }, "$total", 0] } },
+          completedOrders:  { $sum: { $cond: [{ $in: ["$status", ["delivered", "completed"]] }, 1, 0] } },
           cancelledOrders:  { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
           pendingOrders:    { $sum: { $cond: [{ $in: ["$status", ["pending COD", "shipped"]] }, 1, 0] } },
         },
@@ -35,7 +35,7 @@ router.get("/stats", adminAuth, async (_req, res) => {
     sevenDaysAgo.setHours(0, 0, 0, 0);
 
     const dailyData = await Order.aggregate([
-      { $match: { status: "delivered", createdAt: { $gte: sevenDaysAgo } } },
+      { $match: { status: { $in: ["delivered", "completed"] }, createdAt: { $gte: sevenDaysAgo } } },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
@@ -71,6 +71,101 @@ router.get("/stats", adminAuth, async (_req, res) => {
     });
   } catch (err) {
     logger.error({ err }, "GET /admin/stats failed");
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ── CREATE MANUAL ORDER ───────────────────────────────────────────────────────
+// POST /api/admin/orders/manual
+router.post("/orders/manual", adminAuth, async (req, res) => {
+  try {
+    const { customer, items, status } = req.body;
+
+    if (!customer?.name?.trim())
+      return res.status(400).json({ message: "Customer name is required" });
+    if (!Array.isArray(items) || items.length === 0)
+      return res.status(400).json({ message: "At least one item is required" });
+
+    // Validate each item
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (!item.name?.trim())
+        return res.status(400).json({ message: `Item ${i + 1}: product name is required` });
+      if (!item.qty || isNaN(Number(item.qty)) || Number(item.qty) < 1)
+        return res.status(400).json({ message: `Item ${i + 1}: valid quantity is required` });
+      if (item.price === undefined || isNaN(Number(item.price)) || Number(item.price) < 0)
+        return res.status(400).json({ message: `Item ${i + 1}: valid price is required` });
+    }
+
+    // Auto-fetch costPrice from Product collection for each item that has a productId
+    const productIds = items
+      .map((i) => i.productId)
+      .filter((id) => id && /^[a-f\d]{24}$/i.test(id));
+
+    const dbProducts = productIds.length > 0
+      ? await Product.find({ _id: { $in: productIds } }).select("_id costPrice").lean()
+      : [];
+
+    const costMap = {};
+    dbProducts.forEach((p) => { costMap[String(p._id)] = p.costPrice || 0; });
+
+    const parsedItems = items.map((item) => {
+      const autoCost = item.productId ? (costMap[String(item.productId)] ?? 0) : 0;
+      return {
+        productId: item.productId || undefined,
+        name:      item.name.trim(),
+        price:     Number(item.price),
+        costPrice: autoCost,
+        qty:       Number(item.qty),
+        selectedSize:  item.selectedSize  || null,
+        selectedColor: item.selectedColor || null,
+      };
+    });
+
+    const total     = parsedItems.reduce((s, i) => s + i.price * i.qty, 0);
+    const totalCost = parsedItems.reduce((s, i) => s + i.costPrice * i.qty, 0);
+    const profit    = total - totalCost;
+
+    const allowedStatuses = ["pending COD", "shipped", "delivered", "cancelled", "completed"];
+    const orderStatus = allowedStatuses.includes(status) ? status : "completed";
+
+    const order = new Order({
+      orderType: "manual",
+      sessionId: "manual",
+      items: parsedItems,
+      total,
+      totalCost,
+      profit,
+      status: orderStatus,
+      customer: {
+        name:     customer.name.trim(),
+        email:    customer.email?.trim()    || "",
+        phone:    customer.phone?.trim()    || "",
+        province: customer.province?.trim() || "",
+        city:     customer.city?.trim()     || "",
+        address:  customer.address?.trim()  || "",
+      },
+    });
+
+    await order.save();
+
+    // Admin notification
+    try {
+      await Message.create({
+        userId: "admin",
+        title: "Manual Order Created 🧾",
+        body: `Manual order #${String(order._id).slice(-8).toUpperCase()} for ${order.customer.name} — PKR ${total.toLocaleString()} (Profit: PKR ${profit.toLocaleString()})`,
+        orderId: order._id,
+        type: "status_update",
+      });
+    } catch (msgErr) {
+      logger.warn({ err: msgErr }, "Failed to save manual order notification");
+    }
+
+    logger.info({ orderId: order._id }, "Manual order created");
+    res.status(201).json({ success: true, order });
+  } catch (err) {
+    logger.error({ err }, "POST /admin/orders/manual failed");
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -273,14 +368,17 @@ router.get("/sales", adminAuth, async (_req, res) => {
     sixMonthsAgo.setDate(1);
     sixMonthsAgo.setHours(0, 0, 0, 0);
 
+    const completedStatuses = ["delivered", "completed"];
+
     const [monthlyRaw, paymentRaw, totals] = await Promise.all([
-      // Monthly revenue for last 6 months
+      // Monthly revenue for last 6 months (delivered + completed)
       Order.aggregate([
-        { $match: { status: "delivered", createdAt: { $gte: sixMonthsAgo } } },
+        { $match: { status: { $in: completedStatuses }, createdAt: { $gte: sixMonthsAgo } } },
         {
           $group: {
             _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
             revenue: { $sum: "$total" },
+            profit:  { $sum: { $cond: [{ $gt: ["$profit", 0] }, "$profit", { $multiply: ["$total", 0.3] }] } },
           },
         },
         { $sort: { _id: 1 } },
@@ -296,8 +394,14 @@ router.get("/sales", adminAuth, async (_req, res) => {
       ]),
       // Overall totals
       Order.aggregate([
-        { $match: { status: "delivered" } },
-        { $group: { _id: null, revenue: { $sum: "$total" } } },
+        { $match: { status: { $in: completedStatuses } } },
+        {
+          $group: {
+            _id: null,
+            revenue: { $sum: "$total" },
+            profit:  { $sum: { $cond: [{ $gt: ["$profit", 0] }, "$profit", { $multiply: ["$total", 0.3] }] } },
+          },
+        },
       ]),
     ]);
 
@@ -310,7 +414,8 @@ router.get("/sales", adminAuth, async (_req, res) => {
       const label = d.toLocaleDateString("en-PK", { month: "short", year: "numeric" });
       const found = monthlyRaw.find((x) => x._id === key);
       const revenue = found?.revenue || 0;
-      monthlyData.push({ month: label, revenue, profit: revenue * 0.3, loss: 0 });
+      const profit  = found?.profit  || 0;
+      monthlyData.push({ month: label, revenue, profit, loss: 0 });
     }
 
     const paymentSummary = { COD: 0, Online: 0 };
@@ -320,7 +425,8 @@ router.get("/sales", adminAuth, async (_req, res) => {
     });
 
     const totalRevenue = totals[0]?.revenue || 0;
-    res.json({ monthlyData, paymentSummary, totalRevenue, totalProfit: totalRevenue * 0.3 });
+    const totalProfit  = totals[0]?.profit  || 0;
+    res.json({ monthlyData, paymentSummary, totalRevenue, totalProfit });
   } catch (err) {
     logger.error({ err }, "GET /admin/sales failed");
     res.status(500).json({ message: "Server error" });

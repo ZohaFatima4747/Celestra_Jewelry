@@ -181,27 +181,46 @@
     grid-template-columns: 1fr;
     border-radius: 16px 16px 0 0;
     max-width: 100%;
+    width: 100%;
     max-height: 92vh;
     overflow-y: auto;
   }
   .qv-img-wrap {
-    min-height: 220px;
+    aspect-ratio: 4 / 3;
+    min-height: unset;
     max-height: 260px;
   }
   .qv-info {
-    padding: 20px 20px 28px;
+    padding: 20px 20px 32px;
     max-height: none;
     overflow-y: visible;
+    gap: 10px;
   }
-  .qv-name { font-size: 22px; }
+  .qv-name { font-size: 20px; }
   .qv-price { font-size: 20px; }
-  .qv-add-btn { padding: 12px 20px; }
+  .qv-add-btn { padding: 13px 20px; min-height: 44px; }
+  .qv-footer {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .qv-add-btn { flex: 1; text-align: center; }
+  .qv-close {
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
 }
 
 @media (max-width: 400px) {
-  .qv-img-wrap { min-height: 180px; max-height: 220px; }
-  .qv-info { padding: 16px 16px 24px; }
-  .qv-name { font-size: 20px; }
-  .qv-footer { flex-direction: column; align-items: stretch; }
+  .qv-img-wrap { max-height: 200px; }
+  .qv-info { padding: 16px 16px 28px; }
+  .qv-name { font-size: 18px; }
+  .qv-footer { flex-direction: column; align-items: stretch; gap: 10px; }
   .qv-add-btn { width: 100%; text-align: center; min-height: 44px; }
+  .qv-price { font-size: 18px; }
 }

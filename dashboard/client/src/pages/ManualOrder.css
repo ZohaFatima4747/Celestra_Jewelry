@@ -1,0 +1,207 @@
+/* ─────────────────────────────────────────────
+   ManualOrder — POS style, fully responsive
+───────────────────────────────────────────── */
+
+/* ── Page shell ── */
+.mo-page { width: 100%; max-width: 1100px; box-sizing: border-box; }
+
+/* ── Page header ── */
+.mo-page-head { margin-bottom: 24px; }
+.mo-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;
+  padding: 4px 12px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 8px;
+}
+.mo-h1 { font-size: 1.45rem; font-weight: 800; color: #111827; margin: 0 0 4px; line-height: 1.2; }
+.mo-lead { font-size: 0.85rem; color: #6b7280; margin: 0; }
+
+/* ── Two-column body ── */
+.mo-body { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+.mo-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* ── Cards ── */
+.mo-card {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+  padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  min-width: 0; box-sizing: border-box; width: 100%;
+}
+.mo-card__header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 18px; flex-wrap: wrap;
+}
+.mo-card__icon { font-size: 1rem; flex-shrink: 0; }
+.mo-card__title { font-size: 0.92rem; font-weight: 700; color: #111827; margin: 0; flex: 1; }
+
+/* ── Customer grid ── */
+.mo-cust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.mo-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.mo-field--2    { grid-column: span 2; }
+.mo-field--full { grid-column: 1 / -1; }
+
+.mo-label {
+  font-size: 0.68rem; font-weight: 700; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.mo-req { color: #ef4444; }
+
+/* ── Inputs & selects ── */
+.mo-input, .mo-select {
+  width: 100%; box-sizing: border-box;
+  padding: 9px 11px; border: 1.5px solid #e5e7eb; border-radius: 9px;
+  font-size: 0.88rem; color: #111827; background: #f9fafb;
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none; appearance: none; min-width: 0;
+}
+.mo-input:focus, .mo-select:focus {
+  border-color: #6366f1; background: #fff;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+.mo-input::placeholder { color: #9ca3af; }
+.mo-input--err { border-color: #ef4444 !important; background: #fff5f5; }
+.mo-input--c   { text-align: center; }
+.mo-err { font-size: 0.68rem; color: #ef4444; margin: 1px 0 0; line-height: 1.3; }
+
+/* ── Items table (desktop) ── */
+.mo-table-wrap {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  border-radius: 10px; border: 1px solid #f3f4f6; width: 100%;
+}
+.mo-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 520px; }
+.mo-table thead tr { background: #f9fafb; }
+.mo-table th {
+  padding: 9px 10px; text-align: left;
+  font-size: 0.67rem; font-weight: 700; color: #9ca3af;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  border-bottom: 1px solid #f3f4f6; white-space: nowrap;
+}
+.mo-table td { padding: 8px 6px; border-bottom: 1px solid #f9fafb; vertical-align: top; }
+.mo-table tbody tr:last-child td { border-bottom: none; }
+.mo-table tbody tr:hover td { background: #fafafa; }
+.mo-tr--err td { background: #fff5f5 !important; }
+.mo-td-num { color: #d1d5db; font-size: 0.75rem; text-align: center; padding-top: 12px !important; font-weight: 600; }
+.mo-subtotal-pill {
+  display: inline-block; background: #f0fdf4; color: #15803d;
+  border: 1px solid #bbf7d0; padding: 6px 9px; border-radius: 7px;
+  font-weight: 700; font-size: 0.8rem; white-space: nowrap;
+}
+
+/* ── Buttons ── */
+.mo-add-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #6366f1; color: #fff; border: none;
+  padding: 8px 16px; border-radius: 9px;
+  font-size: 0.82rem; font-weight: 700; cursor: pointer;
+  white-space: nowrap; transition: background 0.15s; margin-left: auto;
+}
+.mo-add-btn:hover { background: #4f46e5; }
+.mo-add-btn--full {
+  width: 100%; justify-content: center;
+  margin: 12px 0 0; padding: 12px; border-radius: 10px; margin-left: 0;
+}
+.mo-del-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; background: #fef2f2; color: #ef4444;
+  border: 1px solid #fecaca; border-radius: 7px;
+  font-size: 0.7rem; font-weight: 800; cursor: pointer; flex-shrink: 0;
+  transition: background 0.15s;
+}
+.mo-del-btn:hover { background: #fee2e2; }
+
+/* ── Mobile stacked items (hidden on desktop) ── */
+.mo-mob-items { display: none; flex-direction: column; gap: 12px; }
+.mo-mob-item {
+  background: #f9fafb; border: 1.5px solid #e5e7eb; border-radius: 12px;
+  padding: 14px; display: flex; flex-direction: column; gap: 11px;
+  box-sizing: border-box; width: 100%;
+}
+.mo-mob-item__head { display: flex; align-items: center; justify-content: space-between; }
+.mo-mob-item__label {
+  font-size: 0.75rem; font-weight: 700; color: #6b7280;
+  background: #e5e7eb; padding: 3px 10px; border-radius: 999px;
+}
+.mo-mob-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mo-mob-subtotal {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #f0fdf4; border: 1px solid #bbf7d0;
+  border-radius: 9px; padding: 9px 13px;
+  font-size: 0.83rem; color: #15803d;
+}
+.mo-mob-subtotal span  { font-weight: 600; font-size: 0.78rem; }
+.mo-mob-subtotal strong { font-size: 0.95rem; font-weight: 800; }
+
+/* ══ Sidebar ══════════════════════════════════════════════════════════════ */
+.mo-sidebar { position: sticky; top: 20px; min-width: 0; }
+.mo-summary-card { padding: 18px; }
+.mo-summary-lines { display: flex; flex-direction: column; gap: 7px; min-height: 40px; margin-bottom: 2px; }
+.mo-summary-empty { font-size: 0.8rem; color: #9ca3af; font-style: italic; margin: 0; }
+.mo-summary-line { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+.mo-summary-line__name {
+  font-size: 0.8rem; color: #374151; flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mo-summary-line__qty { color: #9ca3af; font-size: 0.75rem; }
+.mo-summary-line__val { font-size: 0.82rem; font-weight: 700; color: #111827; white-space: nowrap; }
+.mo-summary-sep { border: none; border-top: 1px solid #f3f4f6; margin: 12px 0; }
+.mo-summary-total-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.95rem; color: #111827; }
+.mo-summary-total-row span   { font-weight: 600; }
+.mo-summary-total-row strong { font-size: 1.2rem; font-weight: 800; }
+
+/* ── Alerts ── */
+.mo-alert {
+  padding: 10px 13px; border-radius: 9px;
+  font-size: 0.8rem; font-weight: 500; line-height: 1.4;
+  margin-top: 6px; word-break: break-word;
+}
+.mo-alert--error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.mo-alert--success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+/* ── Submit ── */
+.mo-submit-btn {
+  width: 100%; padding: 13px; background: #111827; color: #fff;
+  border: none; border-radius: 11px; font-size: 0.92rem; font-weight: 800;
+  cursor: pointer; margin-top: 6px; transition: background 0.15s; letter-spacing: 0.02em;
+}
+.mo-submit-btn:hover:not(:disabled) { background: #1f2937; }
+.mo-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.mo-hint { font-size: 0.7rem; color: #9ca3af; text-align: center; margin: 8px 0 0; line-height: 1.5; }
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════ */
+
+/* Tablet landscape */
+@media (max-width: 1024px) {
+  .mo-body { grid-template-columns: 1fr 260px; }
+}
+
+/* Tablet portrait — sidebar stacks below */
+@media (max-width: 860px) {
+  .mo-body { grid-template-columns: 1fr; }
+  .mo-sidebar { position: static; }
+  .mo-summary-lines { display: none; }
+}
+
+/* Large phone — table → cards, 2-col customer grid */
+@media (max-width: 680px) {
+  .mo-table-wrap { display: none; }
+  .mo-mob-items  { display: flex; }
+  .mo-card__header .mo-add-btn { display: none; }
+  .mo-cust-grid { grid-template-columns: 1fr 1fr; }
+  .mo-field--2  { grid-column: span 1; }
+}
+
+/* Small phone — 1-col customer grid */
+@media (max-width: 420px) {
+  .mo-cust-grid { grid-template-columns: 1fr; }
+  .mo-field--2, .mo-field--full { grid-column: span 1; }
+  .mo-card { padding: 14px; }
+  .mo-h1   { font-size: 1.2rem; }
+}
+
+/* Very small */
+@media (max-width: 360px) {
+  .mo-card { padding: 12px; }
+  .mo-h1   { font-size: 1.05rem; }
+  .mo-submit-btn { font-size: 0.88rem; padding: 11px; }
+}

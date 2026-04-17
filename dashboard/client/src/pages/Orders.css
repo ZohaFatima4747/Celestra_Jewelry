@@ -106,9 +106,11 @@
   .status-badge { font-size: 0.72rem; padding: 3px 7px; }
 }
 
-@media (max-width: 360px) {
-  .page-title { font-size: 1.1rem; }
-  .order-modal { border-radius: 12px; }
+.manual-badge {
+  display: inline-block; margin-left: 6px;
+  background: #4361ee22; color: #4361ee;
+  padding: 2px 7px; border-radius: 10px;
+  font-size: 0.68rem; font-weight: 700; vertical-align: middle;
 }
 
 /* ── Mobile card layout ── */
@@ -138,4 +140,9 @@
 @media (max-width: 1024px) {
   .table-wrap { display: none; }
   .orders-cards { display: flex; }
+}
+
+@media (max-width: 360px) {
+  .page-title { font-size: 1.1rem; }
+  .order-modal { border-radius: 12px; }
 }

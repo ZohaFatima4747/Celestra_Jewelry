@@ -7,6 +7,7 @@ import './Sidebar.css';
 const links = [
   { to: '/dashboard', label: '🏠 Home', end: true },
   { to: '/dashboard/orders', label: '📦 Orders' },
+  { to: '/dashboard/orders/manual', label: '🧾 Manual Order' },
   { to: '/dashboard/products', label: '🛍️ Products' },
   { to: '/dashboard/customers', label: '👥 Customers' },
   { to: '/dashboard/sales', label: '💰 Sales & Finance' },

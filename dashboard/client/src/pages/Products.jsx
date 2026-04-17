@@ -3,7 +3,7 @@ import api from '../utils/api';
 import ImageUploader from '../components/ImageUploader';
 import './Products.css';
 
-const emptyForm = { name: '', description: '', price: '', stock: '', category: '', sizes: '', colors: '', tags: '', images: [] };
+const emptyForm = { name: '', description: '', price: '', costPrice: '', stock: '', category: '', sizes: '', colors: '', tags: '', images: [] };
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -24,6 +24,7 @@ export default function Products() {
   const openEdit = (p) => {
     setForm({
       name: p.name, description: p.description || '', price: p.price,
+      costPrice: p.costPrice ?? '',
       stock: p.stock, category: p.category || '',
       sizes: p.sizes?.join(', ') || '',
       colors: p.colors?.join(', ') || '',
@@ -38,7 +39,9 @@ export default function Products() {
     setSaving(true);
     const payload = {
       name: form.name, description: form.description,
-      price: Number(form.price), stock: Number(form.stock),
+      price: Number(form.price),
+      costPrice: form.costPrice !== '' ? Number(form.costPrice) : 0,
+      stock: Number(form.stock),
       category: form.category.trim().toLowerCase(),
       sizes: form.sizes.split(',').map((s) => s.trim()).filter(Boolean),
       colors: form.colors.split(',').map((s) => s.trim()).filter(Boolean),
@@ -105,7 +108,7 @@ export default function Products() {
       <div className="prod-table-wrap">
         <table className="prod-table">
           <thead>
-            <tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+            <tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Cost</th><th>Stock</th><th>Actions</th></tr>
           </thead>
           <tbody>
             {filtered.length === 0 && <tr><td colSpan={6} className="prod-empty">No products found</td></tr>}
@@ -115,6 +118,7 @@ export default function Products() {
                 <td><div className="product-name">{p.name}</div></td>
                 <td>{p.category || '—'}</td>
                 <td>PKR {p.price?.toLocaleString()}</td>
+                <td>{p.costPrice ? `PKR ${p.costPrice.toLocaleString()}` : <span style={{color:'#ccc'}}>—</span>}</td>
                 <td><span className={p.stock <= 5 ? 'stock-low' : 'stock-ok'}>{p.stock}</span></td>
                 <td className="prod-actions">
                   <button className="edit-btn" onClick={() => openEdit(p)}>Edit</button>
@@ -167,18 +171,24 @@ export default function Products() {
                   <span>Name *</span>
                   <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
                 </label>
-                <label>
-                  <span>Category * <small>(new category auto-creates on website)</small></span>
-                  <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required placeholder="e.g. anklets" />
-                </label>
                 <div className="form-row">
                   <label>
                     <span>Price (PKR) *</span>
                     <input type="number" min="0" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
                   </label>
                   <label>
+                    <span>Cost Price (PKR) <small>(used for profit calculation)</small></span>
+                    <input type="number" min="0" value={form.costPrice} onChange={(e) => setForm({ ...form, costPrice: e.target.value })} placeholder="0" />
+                  </label>
+                </div>
+                <div className="form-row">
+                  <label>
                     <span>Stock *</span>
                     <input type="number" min="0" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} required />
+                  </label>
+                  <label>
+                    <span>Category * <small>(new category auto-creates on website)</small></span>
+                    <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required placeholder="e.g. anklets" />
                   </label>
                 </div>
                 <label>
