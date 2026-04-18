@@ -123,7 +123,7 @@ app.use((err, req, res, _next) => {
 });
 
 // ── Start server + graceful shutdown ─────────────────────────────────────────
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 1000;
 const server = app.listen(PORT, () =>
   logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`)
 );
