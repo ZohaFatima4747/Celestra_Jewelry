@@ -40,7 +40,7 @@ export default function ImageUploader({ value = [], onChange }) {
   const resolveUrl = (url) => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
-    const base = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:1000';
+    const base = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://celestra-backend-56ab2d90c7be.herokuapp.com';
     if (url.startsWith('/uploads/')) {
       // Use md variant for dashboard previews (faster)
       const preview = url.endsWith('-full.webp')
