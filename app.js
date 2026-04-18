@@ -8,6 +8,7 @@ const pinoHttp = require("pino-http");
 
 const logger = require("./utils/logger");
 const connectDB = require("./conn/connection");
+const mongoose = require("mongoose");
 const sanitizeMiddleware = require("./middleware/sanitize");
 const { generalLimiter, authLimiter } = require("./middleware/security");
 
@@ -83,11 +84,16 @@ app.use("/assets", corpCrossOrigin, express.static(path.join(__dirname, "../fron
 }));
 
 // ── Database ──────────────────────────────────────────────────────────────────
-connectDB();
+// connectDB() is called inside the async bootstrap below — server only starts after DB is ready
 
 // ── Health check (no auth, no rate limit) ────────────────────────────────────
 app.get("/health", (_req, res) =>
-  res.json({ status: "ok", uptime: process.uptime(), env: process.env.NODE_ENV })
+  res.json({ status: "ok", uptime: process.uptime(), env: process.env.NODE_ENV, db: mongoose.connection.readyState === 1 ? "connected" : "disconnected" })
+);
+
+// ── Root route ────────────────────────────────────────────────────────────────
+app.get("/", (_req, res) =>
+  res.status(200).json({ status: "success", message: "Celestra Jewelry API is running" })
 );
 
 // ── API Routes ────────────────────────────────────────────────────────────────
@@ -102,18 +108,26 @@ app.use("/api/messages",   messageRoutes);
 app.use("/api/upload",     uploadRoutes);
 app.use("/api/contact-us", contactUsRoutes);
 
-// ── Serve frontend SPA ────────────────────────────────────────────────────────
-app.use(express.static(path.join(__dirname, "../frontend/dist")));
-app.get("/*splat", (req, res, next) => {
-  if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) return next();
-  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
-});
+// ── Serve frontend SPA (only when dist exists — skipped in API-only deployments) ──
+const frontendDist = path.join(__dirname, "../frontend/dist");
+const frontendIndex = path.join(frontendDist, "index.html");
+if (require("fs").existsSync(frontendIndex)) {
+  app.use(express.static(frontendDist));
+  app.get("/*splat", (req, res, next) => {
+    if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) return next();
+    res.sendFile(frontendIndex);
+  });
+}
 
-// ── Serve dashboard SPA ───────────────────────────────────────────────────────
-app.use("/dashboard", express.static(path.join(__dirname, "../dashboard/client/dist")));
-app.get("/dashboard/*splat", (_req, res) => {
-  res.sendFile(path.join(__dirname, "../dashboard/client/dist/index.html"));
-});
+// ── Serve dashboard SPA (only when dist exists) ───────────────────────────────
+const dashboardDist = path.join(__dirname, "../dashboard/client/dist");
+const dashboardIndex = path.join(dashboardDist, "index.html");
+if (require("fs").existsSync(dashboardIndex)) {
+  app.use("/dashboard", express.static(dashboardDist));
+  app.get("/dashboard/*splat", (_req, res) => {
+    res.sendFile(dashboardIndex);
+  });
+}
 
 // ── Global error handler ──────────────────────────────────────────────────────
 // eslint-disable-next-line no-unused-vars
@@ -122,22 +136,25 @@ app.use((err, req, res, _next) => {
   res.status(err.status || 500).json({ error: "An unexpected error occurred." });
 });
 
-// ── Start server + graceful shutdown ─────────────────────────────────────────
-const PORT = process.env.PORT || 1000;
-const server = app.listen(PORT, () =>
-  logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`)
-);
+// ── Bootstrap: connect DB then start server ───────────────────────────────────
+(async () => {
+  await connectDB();
 
-const shutdown = (signal) => {
-  logger.info(`${signal} received — shutting down gracefully`);
-  server.close(() => {
-    const mongoose = require("mongoose");
-    mongoose.connection.close(false, () => {
-      logger.info("MongoDB connection closed");
-      process.exit(0);
+  const PORT = process.env.PORT || 1000;
+  const server = app.listen(PORT, () =>
+    logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`)
+  );
+
+  const shutdown = (signal) => {
+    logger.info(`${signal} received — shutting down gracefully`);
+    server.close(() => {
+      mongoose.connection.close(false, () => {
+        logger.info("MongoDB connection closed");
+        process.exit(0);
+      });
     });
-  });
-};
+  };
 
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT",  () => shutdown("SIGINT"));
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT",  () => shutdown("SIGINT"));
+})();
