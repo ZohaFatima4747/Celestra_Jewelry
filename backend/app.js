@@ -78,10 +78,8 @@ app.use("/uploads", corpCrossOrigin, express.static(path.join(__dirname, "upload
 }));
 // Legacy product images — explicit handler so filenames with spaces, &, and
 // other special characters are decoded correctly before hitting the filesystem.
-app.get("/product-images/:filename(*)", corpCrossOrigin, (req, res) => {
+app.get("/product-images/*filename", corpCrossOrigin, (req, res) => {
   try {
-    // Express decodes req.params automatically, so spaces (%20) and special
-    // chars (%26 for &) are already resolved to their literal characters here.
     const filename = req.params.filename;
     const imagesDir = path.join(__dirname, "public/product-images");
     const filePath = path.resolve(imagesDir, filename);
