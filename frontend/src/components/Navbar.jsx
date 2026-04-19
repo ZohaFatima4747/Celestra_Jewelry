@@ -7,7 +7,7 @@ import ProductImage from "./ProductImage";
 import { PROD_URL } from "../utils/api";
 import { useCart } from "../context/CartContext";
 
-const Navbar = ({ cartCount, onCartOpen, searchQuery, onSearchChange }) => {
+const Navbar = ({ cartCount, onCartOpen, searchQuery, onSearchChange, onProductSelect }) => {
   const navigate = useNavigate();
   const { setCartItems } = useCart();
   const [suggestions, setSuggestions] = useState([]);
@@ -41,7 +41,14 @@ const Navbar = ({ cartCount, onCartOpen, searchQuery, onSearchChange }) => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const handleSelect = (product) => { onSearchChange(product.name); setShowDrop(false); };
+  const handleSelect = (product) => {
+    setShowDrop(false);
+    if (onProductSelect) {
+      onProductSelect(product);
+    } else {
+      onSearchChange(product.name);
+    }
+  };
 
   return (
     <>

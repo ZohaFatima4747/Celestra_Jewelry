@@ -31,7 +31,11 @@ const ProductDetail = () => {
 
   const handleSearchChange = (q) => {
     setSearchQuery(q);
-    if (q.trim()) navigate(`/?search=${encodeURIComponent(q.trim())}`);
+  };
+
+  const handleProductSelect = (product) => {
+    navigate(`/product/${product._id}`);
+    setSearchQuery("");
   };
 
   // ── Local page state ───────────────────────────────────────
@@ -186,6 +190,7 @@ const ProductDetail = () => {
         onCartOpen={() => setCartOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
+        onProductSelect={handleProductSelect}
         onCategorySelect={() => navigate("/")}
       />
 

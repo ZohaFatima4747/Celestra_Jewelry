@@ -31,16 +31,16 @@ const UserWishlist = ({ isDark = false }) => {
 
   useEffect(() => { fetchWishlist(); }, []);
 
-  const addToCart = async (productId) => {
+  const addToCart = async (productId, product, qty = 1, selectedSize = null, selectedColor = null) => {
     const userId = getUserId();
     if (!userId) {
-      const product = wishlist.find((i) => i.productId._id === productId)?.productId;
-      if (!product) return;
+      const prod = product || wishlist.find((i) => i.productId._id === productId)?.productId;
+      if (!prod) return;
       try {
         const saved = JSON.parse(localStorage.getItem("guestCart") || "[]");
         const existing = saved.find((i) => i.product._id === productId);
-        if (existing) existing.qty += 1;
-        else saved.push({ _id: `guest_${productId}`, product, qty: 1, selectedSize: null, selectedColor: null });
+        if (existing) existing.qty += qty;
+        else saved.push({ _id: `guest_${productId}`, product: prod, qty, selectedSize, selectedColor });
         localStorage.setItem("guestCart", JSON.stringify(saved));
         setGuestWishlist(getGuestWishlist().filter((id) => id !== productId));
         setWishlist((prev) => prev.filter((i) => i.productId._id !== productId));
@@ -48,7 +48,7 @@ const UserWishlist = ({ isDark = false }) => {
       return;
     }
     try {
-      await api.post(`${CART_URL}/add`, { userId, productId });
+      await api.post(`${CART_URL}/add`, { userId, productId, qty, selectedSize, selectedColor });
       await doToggleWishlist(productId);
       setWishlist((prev) => prev.filter((i) => i.productId._id !== productId));
     } catch { /* silent */ }
