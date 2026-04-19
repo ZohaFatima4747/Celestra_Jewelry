@@ -119,3 +119,25 @@
   .cm-btn { padding: 8px 12px; font-size: 12px; }
   .cm-name { font-size: 14px; }
 }
+
+/* Page header row */
+.cm-page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.cm-page-header .page-title { margin: 0; }
+
+/* Mark all as read button */
+.cm-btn--mark-all { background: #f0ecf8; color: #6a50a0; border: 1px solid #d8d0f0; }
+.cm-btn--mark-all:hover { background: #e8e0f8; }
+
+/* Mark single as read button */
+.cm-btn--read { background: #f0ecf8; color: #6a50a0; }
+
+/* Unread card highlight */
+.cm-card--unread { border-left: 3px solid #6a50a0; background: #fdfcff; }
+
+/* Unread dot indicator */
+.cm-unread-dot {
+  display: inline-block; width: 8px; height: 8px;
+  background: #6a50a0; border-radius: 50%; flex-shrink: 0;
+  margin-top: 4px;
+}
+.cm-meta { flex-direction: row; align-items: center; gap: 8px; flex-wrap: wrap; }

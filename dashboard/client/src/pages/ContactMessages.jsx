@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import api from '../utils/api';
 import './ContactMessages.css';
 
 export default function ContactMessages() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading]   = useState(true);
-  const [filter, setFilter]     = useState('all'); // 'all' | 'pending' | 'replied'
+  const [filter, setFilter]     = useState('all'); // 'all' | 'unread' | 'pending' | 'replied'
   const [selected, setSelected] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [sending, setSending]   = useState(false);
@@ -16,7 +16,7 @@ export default function ContactMessages() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const { data } = await api.get('/contact-us');
       setMessages(data);
@@ -25,18 +25,35 @@ export default function ContactMessages() {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Mark all as read when page opens, then refresh messages
-  useEffect(() => {
-    const init = async () => {
-      try { await api.post('/contact-us/mark-read'); } catch (_) {}
-      await fetchMessages();
-    };
-    init();
   }, []);
 
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
+
+  const markOneRead = async (id) => {
+    try {
+      await api.patch(`/contact-us/${id}/mark-read`);
+      setMessages((prev) =>
+        prev.map((m) => m._id === id ? { ...m, isRead: true } : m)
+      );
+    } catch {
+      showToast('Failed to mark as read.', 'error');
+    }
+  };
+
+  const markAllRead = async () => {
+    try {
+      await api.post('/contact-us/mark-read');
+      setMessages((prev) => prev.map((m) => ({ ...m, isRead: true })));
+      showToast('All messages marked as read.');
+    } catch {
+      showToast('Failed to mark all as read.', 'error');
+    }
+  };
+
   const filtered = messages.filter((m) => {
+    if (filter === 'unread')  return !m.isRead;
     if (filter === 'replied') return m.replied;
     if (filter === 'pending') return !m.replied;
     return true;
@@ -58,7 +75,7 @@ export default function ContactMessages() {
         replyMessage:    replyText,
       });
       setMessages((prev) =>
-        prev.map((m) => m._id === selected._id ? { ...m, replied: true } : m)
+        prev.map((m) => m._id === selected._id ? { ...m, replied: true, isRead: true } : m)
       );
       showToast(`Reply sent to ${selected.email}`);
       closeReply();
@@ -82,12 +99,20 @@ export default function ContactMessages() {
 
   const fmt = (iso) => new Date(iso).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+  const unreadCount  = messages.filter((m) => !m.isRead).length;
   const pendingCount = messages.filter((m) => !m.replied).length;
   const repliedCount = messages.filter((m) => m.replied).length;
 
   return (
     <div className="cm-page">
-      <h2 className="page-title">Contact Messages</h2>
+      <div className="cm-page-header">
+        <h2 className="page-title">Contact Messages</h2>
+        {unreadCount > 0 && (
+          <button className="cm-btn cm-btn--mark-all" onClick={markAllRead}>
+            ✓ Mark all as read ({unreadCount})
+          </button>
+        )}
+      </div>
 
       {toast && <div className={`cm-toast cm-toast--${toast.type}`}>{toast.text}</div>}
 
@@ -95,6 +120,9 @@ export default function ContactMessages() {
       <div className="cm-filters">
         <button className={`cm-filter-btn${filter === 'all' ? ' active' : ''}`} onClick={() => setFilter('all')}>
           All <span className="cm-filter-count">{messages.length}</span>
+        </button>
+        <button className={`cm-filter-btn${filter === 'unread' ? ' active' : ''}`} onClick={() => setFilter('unread')}>
+          Unread <span className="cm-filter-count">{unreadCount}</span>
         </button>
         <button className={`cm-filter-btn${filter === 'pending' ? ' active' : ''}`} onClick={() => setFilter('pending')}>
           Pending <span className="cm-filter-count">{pendingCount}</span>
@@ -111,9 +139,10 @@ export default function ContactMessages() {
       ) : (
         <div className="cm-list">
           {filtered.map((m) => (
-            <div key={m._id} className={`cm-card${m.replied ? ' cm-card--replied' : ''}`}>
+            <div key={m._id} className={`cm-card${m.replied ? ' cm-card--replied' : ''}${!m.isRead ? ' cm-card--unread' : ''}`}>
               <div className="cm-card-header">
                 <div className="cm-meta">
+                  {!m.isRead && <span className="cm-unread-dot" title="Unread" />}
                   <span className="cm-name">{m.name}</span>
                   <a href={`mailto:${m.email}`} className="cm-email">{m.email}</a>
                 </div>
@@ -131,6 +160,11 @@ export default function ContactMessages() {
                 <button className="cm-btn cm-btn--reply" onClick={() => openReply(m)}>
                   ↩ Reply
                 </button>
+                {!m.isRead && (
+                  <button className="cm-btn cm-btn--read" onClick={() => markOneRead(m._id)}>
+                    ✓ Mark as read
+                  </button>
+                )}
                 <button className="cm-btn cm-btn--delete" onClick={() => deleteMessage(m._id)}>
                   🗑 Delete
                 </button>

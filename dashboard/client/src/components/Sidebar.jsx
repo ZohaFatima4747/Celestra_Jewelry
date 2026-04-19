@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
@@ -20,6 +20,7 @@ const links = [
 export default function Sidebar({ open, onClose }) {
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadContactCount, setUnreadContactCount] = useState(0);
 
@@ -45,7 +46,7 @@ export default function Sidebar({ open, onClose }) {
     fetchContactUnread();
     const interval = setInterval(fetchContactUnread, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [location.pathname]); // re-fetch whenever route changes
 
   const handleLogout = () => { logout(); navigate('/login'); };
   const handleNavClick = () => { if (onClose) onClose(); };

@@ -26,6 +26,14 @@ const ProductDetail = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
 
+  // ── Search state ──────────────────────────────────────────
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearchChange = (q) => {
+    setSearchQuery(q);
+    if (q.trim()) navigate(`/?search=${encodeURIComponent(q.trim())}`);
+  };
+
   // ── Local page state ───────────────────────────────────────
   const [product, setProduct]           = useState(null);
   const [loading, setLoading]           = useState(true);
@@ -176,8 +184,8 @@ const ProductDetail = () => {
       <Navbar
         cartCount={cartCount}
         onCartOpen={() => setCartOpen(true)}
-        searchQuery=""
-        onSearchChange={() => {}}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
         onCategorySelect={() => navigate("/")}
       />
 
