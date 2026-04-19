@@ -71,12 +71,27 @@ app.use("/uploads", corpCrossOrigin, express.static(path.join(__dirname, "upload
   etag: true,
   lastModified: true,
 }));
-// Legacy product images from public folder
-app.use("/product-images", corpCrossOrigin, express.static(path.join(__dirname, "../frontend/public/product-images"), {
-  maxAge: "7d",
-  etag: true,
-  lastModified: true,
-}));
+// Legacy product images — explicit handler so filenames with spaces, &, and
+// other special characters are decoded correctly before hitting the filesystem.
+app.get("/product-images/:filename(*)", corpCrossOrigin, (req, res) => {
+  try {
+    // Express decodes req.params automatically, so spaces (%20) and special
+    // chars (%26 for &) are already resolved to their literal characters here.
+    const filename = req.params.filename;
+    const imagesDir = path.join(__dirname, "public/product-images");
+    const filePath = path.resolve(imagesDir, filename);
+    // Prevent path traversal
+    if (!filePath.startsWith(imagesDir + path.sep) && filePath !== imagesDir) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    res.setHeader("Cache-Control", "public, max-age=604800"); // 7d
+    res.sendFile(filePath, (err) => {
+      if (err && !res.headersSent) res.status(404).json({ error: "Image not found" });
+    });
+  } catch {
+    res.status(400).json({ error: "Invalid filename" });
+  }
+});
 // Built frontend assets — content-hashed filenames, safe to cache forever
 app.use("/assets", corpCrossOrigin, express.static(path.join(__dirname, "../frontend/dist/assets"), {
   maxAge: "1y",
@@ -138,23 +153,45 @@ app.use((err, req, res, _next) => {
 
 // ── Bootstrap: connect DB then start server ───────────────────────────────────
 (async () => {
-  await connectDB();
+  try {
+    await connectDB();
+  } catch (err) {
+    logger.error("DB connection failed during startup", err);
+    process.exit(1);
+  }
 
   const PORT = process.env.PORT || 1000;
+
   const server = app.listen(PORT, () =>
     logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`)
   );
 
+  let isShuttingDown = false;
+
   const shutdown = (signal) => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+
     logger.info(`${signal} received — shutting down gracefully`);
-    server.close(() => {
-      mongoose.connection.close(false, () => {
+
+    server.close(async () => {
+      try {
+        await mongoose.connection.close(false);
         logger.info("MongoDB connection closed");
         process.exit(0);
-      });
+      } catch (err) {
+        logger.error("Error during shutdown", err);
+        process.exit(1);
+      }
     });
+
+    // Fallback force exit (prevents hanging on Heroku)
+    setTimeout(() => {
+      logger.error("Forced shutdown after timeout");
+      process.exit(1);
+    }, 10000);
   };
 
   process.on("SIGTERM", () => shutdown("SIGTERM"));
-  process.on("SIGINT",  () => shutdown("SIGINT"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 })();
