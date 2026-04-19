@@ -46,10 +46,24 @@ router.patch('/:messageId/read', async (req, res) => {
     const message = await Message.findById(req.params.messageId);
     if (!message) return res.status(404).json({ error: 'Message not found' });
 
-    // Compare as strings to avoid ObjectId vs string mismatch
-    const isOwner = String(message.userId) === String(req.user.id);
-    if (!isOwner && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Forbidden' });
+    // Direct ownership check (string comparison to handle ObjectId vs string)
+    const isDirectOwner = String(message.userId) === String(req.user.id);
+
+    if (!isDirectOwner && req.user.role !== 'admin') {
+      // Fallback: check if this message belongs to a guest session linked to the user's email
+      // (covers the case where a user placed an order as guest before registering)
+      let isEmailOwner = false;
+      if (req.user.email) {
+        const order = await Order.findOne({
+          sessionId: message.userId,
+          'customer.email': req.user.email,
+        }).lean();
+        isEmailOwner = !!order;
+      }
+
+      if (!isEmailOwner) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
     }
 
     message.isRead = true;
@@ -67,7 +81,18 @@ router.patch('/user/:userId/read-all', async (req, res) => {
   }
 
   try {
-    await Message.updateMany({ userId: req.params.userId }, { isRead: true });
+    // Collect all userIds to mark read: the user's own ID + any guest session IDs
+    // linked to their email (same logic as the GET fetch)
+    const userIds = [req.params.userId];
+
+    if (req.user.email) {
+      const orders = await Order.find({ 'customer.email': req.user.email })
+        .select('sessionId').lean();
+      const guestIds = [...new Set(orders.map((o) => o.sessionId).filter(Boolean))];
+      userIds.push(...guestIds);
+    }
+
+    await Message.updateMany({ userId: { $in: userIds } }, { isRead: true });
     res.json({ success: true });
   } catch {
     res.status(500).json({ error: 'Server error' });
