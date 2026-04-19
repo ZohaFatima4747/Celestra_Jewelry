@@ -138,7 +138,7 @@ const ProductDetail = () => {
 
   // Build absolute OG image URL for social sharing
   const SITE_URL = import.meta.env.VITE_SITE_URL || "https://www.celestrajewelry.com";
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://celestra-backend-56ab2d90c7be.herokuapp.com";
   const rawImg   = gallery[0] || "";
   const ogImage  = rawImg.startsWith("http")
     ? rawImg

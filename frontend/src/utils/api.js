@@ -1,9 +1,8 @@
 /**
  * Centralised API base URLs.
- * Uses a relative base so requests work correctly through any tunnel/proxy.
- * Falls back to localhost only when VITE_API_BASE_URL is explicitly set (direct local dev).
+ * Falls back to the production Heroku backend if the env var isn't set at build time.
  */
-export const BASE_URL  = import.meta.env.VITE_API_BASE_URL || "";
+export const BASE_URL  = import.meta.env.VITE_API_BASE_URL || "https://celestra-backend-56ab2d90c7be.herokuapp.com";
 export const API       = `${BASE_URL}/api`;
 export const AUTH_URL  = `${API}/v1/auth`;
 export const CART_URL  = `${API}/cart`;

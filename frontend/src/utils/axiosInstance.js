@@ -7,7 +7,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://celestra-backend-56ab2d90c7be.herokuapp.com",
   headers: {
     // Bypass ngrok free-tier browser warning interstitial on all requests
     "ngrok-skip-browser-warning": "true",
