@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../utils/api';
 import ImageUploader from '../components/ImageUploader';
+import { resolveImage } from '../utils/imageUrl';
 import './Products.css';
 
 const emptyForm = { name: '', description: '', price: '', costPrice: '', stock: '', category: '', sizes: '', colors: '', tags: '', images: [] };
@@ -72,17 +73,7 @@ export default function Products() {
       (categoryFilter === 'all' || p.category === categoryFilter);
   });
 
-  const imgSrc = (url) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    const base = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://celestra-backend-56ab2d90c7be.herokuapp.com';
-    if (url.startsWith('/uploads/')) {
-      const thumb = url.endsWith('-full.webp') ? url.replace(/-full\.webp$/, '-thumb.webp') : url;
-      return base + thumb;
-    }
-    // Plain filename from seed data — served from /product-images
-    return base + '/product-images/' + encodeURIComponent(url);
-  };
+  const imgSrc = (url) => resolveImage(url, 'thumb');
 
   if (loading) return <div className="prod-loading">Loading products...</div>;
 

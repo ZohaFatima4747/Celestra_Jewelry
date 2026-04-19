@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import api from '../utils/api';
+import { resolveImage } from '../utils/imageUrl';
 import './ImageUploader.css';
 
 /**
@@ -37,19 +38,7 @@ export default function ImageUploader({ value = [], onChange }) {
     upload(e.dataTransfer.files);
   };
 
-  const resolveUrl = (url) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    const base = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://celestra-backend-56ab2d90c7be.herokuapp.com';
-    if (url.startsWith('/uploads/')) {
-      // Use md variant for dashboard previews (faster)
-      const preview = url.endsWith('-full.webp')
-        ? url.replace(/-full\.webp$/, '-md.webp')
-        : url;
-      return `${base}${preview}`;
-    }
-    return `${base}/assets/${encodeURIComponent(url)}`;
-  };
+  const resolveUrl = (url) => resolveImage(url, 'md');
 
   const remove = (idx) => onChange(value.filter((_, i) => i !== idx));
 

@@ -8,7 +8,11 @@
  *  4. Fallback → empty string
  */
 
-const BASE = import.meta.env.VITE_API_BASE_URL || '';
+// Always fall back to the production backend URL so images work even if the
+// env var is missing at build time (e.g. Vercel deployment without VITE_API_BASE_URL set).
+const BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://celestra-backend-56ab2d90c7be.herokuapp.com';
 
 export function resolveImage(filename, size = 'full') {
   if (!filename) return '';
@@ -21,8 +25,8 @@ export function resolveImage(filename, size = 'full') {
     return `${BASE}${filename}`;
   }
 
-  // Legacy assets — served from public/product-images/
-  return `/product-images/${filename}`;
+  // Legacy seed images — served from /product-images on the backend
+  return `${BASE}/product-images/${encodeURIComponent(filename)}`;
 }
 
 /**
