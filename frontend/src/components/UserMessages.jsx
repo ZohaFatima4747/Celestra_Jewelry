@@ -39,17 +39,25 @@ const UserMessages = ({ isDark }) => {
 
   const markRead = async (msgId, e) => {
     e?.stopPropagation();
+    // Optimistically update UI first
+    setMessages((prev) => prev.map((m) => m._id === msgId ? { ...m, isRead: true } : m));
     try {
       await api.patch(`${MSG_URL}/${msgId}/read`);
-      setMessages((prev) => prev.map((m) => m._id === msgId ? { ...m, isRead: true } : m));
-    } catch { /* silent */ }
+    } catch {
+      // Revert on failure
+      setMessages((prev) => prev.map((m) => m._id === msgId ? { ...m, isRead: false } : m));
+    }
   };
 
   const markAllRead = async () => {
+    // Optimistically update UI first
+    setMessages((prev) => prev.map((m) => ({ ...m, isRead: true })));
     try {
       await api.patch(`${MSG_URL}/user/${userId}/read-all`);
-      setMessages((prev) => prev.map((m) => ({ ...m, isRead: true })));
-    } catch { /* silent */ }
+    } catch {
+      // Revert on failure — re-fetch from server
+      fetchMessages();
+    }
   };
 
   const displayed   = filter === "unread" ? messages.filter((m) => !m.isRead) : messages;
