@@ -227,6 +227,21 @@ router.get("/unread-count", adminAuth, async (req, res) => {
   }
 });
 
+// ── PATCH /api/contact-us/:id/mark-read — mark single message as read (admin only) ──
+router.patch("/:id/mark-read", adminAuth, async (req, res) => {
+  try {
+    const msg = await ContactMessage.findByIdAndUpdate(
+      req.params.id,
+      { isRead: true },
+      { new: true }
+    );
+    if (!msg) return res.status(404).json({ error: "Message not found." });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to mark message as read." });
+  }
+});
+
 // ── POST /api/contact-us/mark-read — mark all messages as read (admin only) ───
 router.post("/mark-read", adminAuth, async (req, res) => {
   try {
