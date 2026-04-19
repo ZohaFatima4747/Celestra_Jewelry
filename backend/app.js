@@ -80,7 +80,9 @@ app.use("/uploads", corpCrossOrigin, express.static(path.join(__dirname, "upload
 // other special characters are decoded correctly before hitting the filesystem.
 app.get("/product-images/*filename", corpCrossOrigin, (req, res) => {
   try {
-    const filename = req.params.filename;
+    // In Express 5, wildcard params are arrays — join to get the full path string
+    const raw = req.params.filename;
+    const filename = Array.isArray(raw) ? raw.join('/') : raw;
     const imagesDir = path.join(__dirname, "public/product-images");
     const filePath = path.resolve(imagesDir, filename);
     // Prevent path traversal
