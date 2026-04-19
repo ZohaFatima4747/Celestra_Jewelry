@@ -35,10 +35,15 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
   : [];
 
+// Vercel preview deployments use dynamic URLs — allow any subdomain of vercel.app
+// that belongs to known project slugs, in addition to the explicit allowlist.
+const VERCEL_PREVIEW_RE = /^https:\/\/celestra-[\w-]+-[\w-]+-[\w-]+\.vercel\.app$/;
+
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow server-to-server (no origin) and whitelisted origins
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    if (!origin) return cb(null, true); // server-to-server
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    if (VERCEL_PREVIEW_RE.test(origin)) return cb(null, true);
     cb(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
