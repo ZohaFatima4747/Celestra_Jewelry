@@ -35,9 +35,9 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
   : [];
 
-// Vercel preview deployments use dynamic URLs — allow any subdomain of vercel.app
-// that belongs to known project slugs, in addition to the explicit allowlist.
-const VERCEL_PREVIEW_RE = /^https:\/\/celestra-[\w-]+-[\w-]+-[\w-]+\.vercel\.app$/;
+// Vercel preview deployments use dynamic URLs — allow any *.vercel.app subdomain
+// that starts with "celestra-" so preview deploys work without touching env vars.
+const VERCEL_PREVIEW_RE = /^https:\/\/celestra-[a-z0-9-]+\.vercel\.app$/i;
 
 app.use(cors({
   origin: (origin, cb) => {
