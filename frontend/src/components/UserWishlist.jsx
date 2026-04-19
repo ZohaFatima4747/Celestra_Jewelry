@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import QuickViewModal from "./QuickViewModal";
 import { getUserId } from "../utils/auth";
-import { CART_URL } from "../utils/api";
+import { CART_URL, PROD_URL } from "../utils/api";
 import { resolveImage } from "../utils/assetMap";
 import api from "../utils/axiosInstance";
+import { fetchCached } from "../utils/productCache";
 import {
   fetchUserWishlist,
   fetchGuestWishlistProducts,
@@ -30,6 +31,18 @@ const UserWishlist = ({ isDark = false }) => {
   };
 
   useEffect(() => { fetchWishlist(); }, []);
+
+  // Always fetch the full product before opening QuickView so all fields
+  // (description, sizes, colors, rating, etc.) are guaranteed to be present
+  const openQuickView = async (partialProduct) => {
+    try {
+      const full = await fetchCached(`${PROD_URL}/${partialProduct._id}`);
+      setQuickViewProduct(full);
+    } catch {
+      // Fallback to whatever data we already have
+      setQuickViewProduct(partialProduct);
+    }
+  };
 
   const addToCart = async (productId, product, qty = 1, selectedSize = null, selectedColor = null) => {
     const userId = getUserId();
@@ -85,12 +98,12 @@ const UserWishlist = ({ isDark = false }) => {
               className="uw-card"
               key={item.productId._id}
               style={{ animationDelay: `${i * 0.06}s` }}
-              onClick={() => setQuickViewProduct(item.productId)}
+              onClick={() => openQuickView(item.productId)}
             >
               <div className="uw-card-img">
                 <img src={resolveImage(item.productId.images?.[0])} alt={item.productId.name} />
                 <div className="uw-card-overlay">
-                  <button className="uw-quick-btn" onClick={(e) => { e.stopPropagation(); setQuickViewProduct(item.productId); }}>
+                  <button className="uw-quick-btn" onClick={(e) => { e.stopPropagation(); openQuickView(item.productId); }}>
                     Quick View
                   </button>
                 </div>

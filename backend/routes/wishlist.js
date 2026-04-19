@@ -33,7 +33,7 @@ router.post("/add", authMiddleware, async (req, res) => {
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const wl = await Wishlist.findOne({ userId: req.user.id })
-      .populate("products.productId", "name images price category stock");
+      .populate("products.productId", "name images price category stock description sizes colors rating numReviews");
     res.json({ success: true, wishlist: wl?.products || [] });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -85,7 +85,7 @@ router.post("/toggle", async (req, res) => {
 router.get("/:userId", async (req, res) => {
   try {
     const wl = await Wishlist.findOne({ userId: req.params.userId })
-      .populate("products.productId", "name images price category stock");
+      .populate("products.productId", "name images price category stock description sizes colors rating numReviews");
     res.json({ success: true, wishlist: wl?.products || [] });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
