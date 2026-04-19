@@ -11,7 +11,7 @@ router.use(authMiddleware);
 // Users can only fetch their own messages (enforced by comparing token userId)
 router.get('/user/:userId', async (req, res) => {
   // Ensure the authenticated user is requesting their own messages
-  if (req.user.id !== req.params.userId && req.user.role !== 'admin') {
+  if (String(req.user.id) !== String(req.params.userId) && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden' });
   }
 
@@ -46,8 +46,9 @@ router.patch('/:messageId/read', async (req, res) => {
     const message = await Message.findById(req.params.messageId);
     if (!message) return res.status(404).json({ error: 'Message not found' });
 
-    // Only the owner or admin can mark as read
-    if (message.userId !== req.user.id && req.user.role !== 'admin') {
+    // Compare as strings to avoid ObjectId vs string mismatch
+    const isOwner = String(message.userId) === String(req.user.id);
+    if (!isOwner && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -61,7 +62,7 @@ router.patch('/:messageId/read', async (req, res) => {
 
 // PATCH /api/messages/user/:userId/read-all
 router.patch('/user/:userId/read-all', async (req, res) => {
-  if (req.user.id !== req.params.userId && req.user.role !== 'admin') {
+  if (String(req.user.id) !== String(req.params.userId) && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden' });
   }
 
