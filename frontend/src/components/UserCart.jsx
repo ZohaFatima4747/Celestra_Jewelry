@@ -1,18 +1,15 @@
 import { useEffect, useState } from "react";
 import { getUserId } from "../utils/auth";
-import { CART_URL, ORDER_URL } from "../utils/api";
+import { CART_URL } from "../utils/api";
 import { resolveImage } from "../utils/assetMap";
 import api from "../utils/axiosInstance";
+import CheckoutModal from "./CheckoutModal";
 import "./UserCart.css";
 
 const UserCart = () => {
   const [cart, setCart]               = useState({ items: [], total: 0 });
   const [showPayment, setShowPayment] = useState(false);
   const [loading, setLoading]         = useState(false);
-  const [form, setForm]               = useState({ name: "", email: "", phone: "", address: "" });
-
-  const handleFormChange = (e) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const fetchCart = async () => {
     const userId = getUserId();
@@ -55,42 +52,10 @@ const UserCart = () => {
     fetchCart();
   };
 
-  const placeOrder = async () => {
-    const userId = getUserId();
-    if (!userId) return alert("Login first");
-    const res = await api.post(`${ORDER_URL}/complete-payment`, {
-      userId,
-      customer: form,
-      items: cart.items.map((i) => ({
-        productId: i.product._id,
-        name: i.product.name,
-        price: i.product.price,
-        qty: i.qty,
-        selectedSize: i.selectedSize || null,
-        selectedColor: i.selectedColor || null,
-      })),
-      total: cart.total,
-    });
-    return res.data;
-  };
-
-  const handleCOD = async () => {
-    if (!form.name || !form.email || !form.phone || !form.address) {
-      alert("Please fill in all fields.");
-      return;
-    }
-    const result = await placeOrder();
-    if (result.success) {
-      if (form.email) {
-        localStorage.setItem("guestEmail", form.email);
-        localStorage.setItem("guestName", form.name || "");
-      }
-      setShowPayment(false);
-      fetchCart();
-      alert("Order placed! Pay with Cash on Delivery.");
-    } else {
-      alert(result.error || "Something went wrong.");
-    }
+  const handleOrderSuccess = (message) => {
+    setShowPayment(false);
+    setCart({ items: [], total: 0 });
+    alert(message);
   };
 
   return (
@@ -142,39 +107,12 @@ const UserCart = () => {
       )}
 
       {showPayment && (
-        <div className="payment-overlay">
-          <div className="payment-popup">
-            <button className="close-btn" onClick={() => setShowPayment(false)}>x</button>
-            <h2>Checkout</h2>
-            <div className="user-details-form">
-              {[
-                { label: "Full Name",    name: "name",  type: "text",  placeholder: "Full Name" },
-                { label: "Email",        name: "email", type: "email", placeholder: "Email" },
-                { label: "Phone Number", name: "phone", type: "text",  placeholder: "Phone Number" },
-              ].map(({ label, name, type, placeholder }) => (
-                <div key={name}>
-                  <h3>{label}:</h3>
-                  <input
-                    type={type}
-                    name={name}
-                    placeholder={placeholder}
-                    value={form[name]}
-                    onChange={handleFormChange}
-                  />
-                </div>
-              ))}
-              <h3>Address:</h3>
-              <textarea
-                name="address"
-                placeholder="Address"
-                value={form.address}
-                onChange={handleFormChange}
-              />
-            </div>
-            <button className="cod-btn" onClick={handleCOD}>Place Order (Cash on Delivery)</button>
-            <button className="cancel-btn" onClick={() => setShowPayment(false)}>Cancel</button>
-          </div>
-        </div>
+        <CheckoutModal
+          cartItems={cart.items}
+          totalAmount={cart.total}
+          onSuccess={handleOrderSuccess}
+          onClose={() => setShowPayment(false)}
+        />
       )}
     </div>
   );
