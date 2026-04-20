@@ -70,7 +70,7 @@ Run all three apps in development:
 
 ```bash
 # Terminal 1
-cd backend && npm run dev
+cd backend && nodemon app.js
 
 # Terminal 2 — storefront at http://localhost:5173
 cd frontend && npm run dev
@@ -129,7 +129,7 @@ VITE_API_URL=http://localhost:1000/api
 ```bash
 cd frontend && npm run build          # served at /
 cd dashboard/client && npm run build  # served at /dashboard
-cd backend && npm start
+cd backend && npm start/ npm install
 ```
 
 The `Procfile` is pre-configured: `web: node app.js`
