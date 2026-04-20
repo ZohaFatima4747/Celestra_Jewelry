@@ -140,6 +140,6 @@ Set `VITE_API_BASE_URL` to your backend URL, then deploy each app. The SPA rewri
 
 ---
 
-## 📚 Detailed Documentation
+Author 
 
-In-depth documentation covering API routes, data models, security architecture, rate limiting, and the image processing pipeline is available in [`/docs`](./docs).
+Zoha Fatima
