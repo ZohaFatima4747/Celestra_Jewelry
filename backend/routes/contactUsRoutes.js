@@ -195,32 +195,47 @@ router.post("/", async (req, res) => {
       return res.json({ success: true, message: "Your message has been sent successfully." });
     }
 
-    // 1. Notify admin
-    await transporter.sendMail({
-      from: `"Celestra Jewelry Contact" <${process.env.MAIL_USER}>`,
-      to: process.env.MAIL_USER,
-      replyTo: `"${name.trim()}" <${email.trim()}>`,
-      subject: subject?.trim() ? `[Contact Us] ${subject.trim()}` : `[Contact Us] New message from ${name.trim()}`,
-      html: adminEmailHtml({ name, email, subject, message }),
-    });
+    // Send emails — non-blocking: DB save already succeeded, don't fail the user if SMTP errors
+    try {
+      // 1. Notify admin
+      await transporter.sendMail({
+        from: `"Celestra Jewelry Contact" <${process.env.MAIL_USER}>`,
+        to: process.env.MAIL_USER,
+        replyTo: `"${name.trim()}" <${email.trim()}>`,
+        subject: subject?.trim() ? `[Contact Us] ${subject.trim()}` : `[Contact Us] New message from ${name.trim()}`,
+        html: adminEmailHtml({ name, email, subject, message }),
+      });
 
-    // 2. Send confirmation to user
-    await transporter.sendMail({
-      from: `"Celestra Jewelry Support" <${process.env.MAIL_USER}>`,
-      to: `"${name.trim()}" <${email.trim()}>`,
-      subject: "We received your message – Celestra Jewelry",
-      html: userReplyHtml({
-        name,
-        email,
-        subject,
-        originalMessage: message,
-        replyMessage: "Thank you for getting in touch! We have received your message and our team will review it shortly. We typically respond within 24–48 hours.",
-      }),
-    });
+      // 2. Send confirmation to user
+      await transporter.sendMail({
+        from: `"Celestra Jewelry Support" <${process.env.MAIL_USER}>`,
+        to: `"${name.trim()}" <${email.trim()}>`,
+        subject: "We received your message – Celestra Jewelry",
+        html: userReplyHtml({
+          name,
+          email,
+          subject,
+          originalMessage: message,
+          replyMessage: "Thank you for getting in touch! We have received your message and our team will review it shortly. We typically respond within 24–48 hours.",
+        }),
+      });
+    } catch (mailErr) {
+      // Log full SMTP error but don't fail the user — message is already in DB
+      logger.error({
+        err: mailErr,
+        code: mailErr.code,
+        command: mailErr.command,
+        response: mailErr.response,
+        responseCode: mailErr.responseCode,
+        MAIL_USER: process.env.MAIL_USER,
+        MAIL_PASS_SET: !!process.env.MAIL_PASS,
+        MAIL_PASS_LEN: process.env.MAIL_PASS?.replace(/\s+/g, '').length,
+      }, "[contact-us] SMTP error — message saved to DB but email not sent");
+    }
 
     res.json({ success: true, message: "Your message has been sent successfully." });
   } catch (err) {
-    logger.error({ err, code: err.code, command: err.command }, "[contact-us] error");
+    logger.error({ err, code: err.code }, "[contact-us] DB error");
     res.status(500).json({ error: "Failed to send message. Please try again later." });
   }
 });

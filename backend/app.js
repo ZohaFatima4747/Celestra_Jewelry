@@ -39,8 +39,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
   : [];
 
-// Vercel preview deployments — allow any celestra-* subdomain without touching env vars
-const VERCEL_PREVIEW_RE = /^https:\/\/celestra-[a-z0-9-]+\.vercel\.app$/i;
+// Vercel preview deployments — allow any *.vercel.app subdomain for this project
+const VERCEL_PREVIEW_RE = /^https:\/\/celestra-jewelry[a-z0-9-]*\.[a-z0-9-]+\.vercel\.app$/i;
 
 const isProduction = process.env.NODE_ENV === "production";
 
