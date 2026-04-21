@@ -8,15 +8,24 @@ const logger = require("../utils/logger");
 const createTransporter = () => {
   const user = process.env.MAIL_USER;
   const pass = process.env.MAIL_PASS;
-  
+
+  logger.info({
+    MAIL_USER: user || "(not set)",
+    MAIL_PASS_SET: !!pass,
+    MAIL_PASS_LEN: pass ? pass.replace(/\s+/g, '').length : 0,
+  }, "[contact-us] transporter env check");
+
   if (!user || !pass) {
-    logger.error("MAIL_USER or MAIL_PASS not set in environment variables");
+    logger.error("[contact-us] MAIL_USER or MAIL_PASS missing — cannot create transporter");
     return null;
   }
-  
+
+  // Explicit SMTP config instead of service shorthand — more reliable on hosted platforms
   return nodemailer.createTransport({
-    service: "gmail",
-    auth: { user, pass: pass.replace(/\s+/g, '') }, // strip any spaces from app password
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // STARTTLS
+    auth: { user, pass: pass.replace(/\s+/g, '') },
   });
 };
 
@@ -198,16 +207,17 @@ router.post("/", async (req, res) => {
     // Send emails — non-blocking: DB save already succeeded, don't fail the user if SMTP errors
     try {
       // 1. Notify admin
-      await transporter.sendMail({
+      const adminInfo = await transporter.sendMail({
         from: `"Celestra Jewelry Contact" <${process.env.MAIL_USER}>`,
         to: process.env.MAIL_USER,
         replyTo: `"${name.trim()}" <${email.trim()}>`,
         subject: subject?.trim() ? `[Contact Us] ${subject.trim()}` : `[Contact Us] New message from ${name.trim()}`,
         html: adminEmailHtml({ name, email, subject, message }),
       });
+      logger.info({ messageId: adminInfo.messageId, response: adminInfo.response }, "[contact-us] admin email sent");
 
       // 2. Send confirmation to user
-      await transporter.sendMail({
+      const userInfo = await transporter.sendMail({
         from: `"Celestra Jewelry Support" <${process.env.MAIL_USER}>`,
         to: `"${name.trim()}" <${email.trim()}>`,
         subject: "We received your message – Celestra Jewelry",
@@ -219,8 +229,8 @@ router.post("/", async (req, res) => {
           replyMessage: "Thank you for getting in touch! We have received your message and our team will review it shortly. We typically respond within 24–48 hours.",
         }),
       });
+      logger.info({ messageId: userInfo.messageId, response: userInfo.response }, "[contact-us] user confirmation email sent");
     } catch (mailErr) {
-      // Log full SMTP error but don't fail the user — message is already in DB
       logger.error({
         err: mailErr,
         code: mailErr.code,
