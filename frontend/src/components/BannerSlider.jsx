@@ -12,7 +12,7 @@ const BannerSlider = ({ onShopNow }) => (
   <div className="banner-wrap">
     <div className="banner-hero">
       <div className="banner-content">
-        <div className="banner-tag">— New Collection &nbsp;·&nbsp; Celestra · 2026</div>
+        <div className="banner-tag">— New Collection &nbsp;·&nbsp; Celestra BY KASHAF · 2026 ·</div>
         <h1 className="banner-title">
           Jewellery born<br />from the <em>night sky</em>
         </h1>
