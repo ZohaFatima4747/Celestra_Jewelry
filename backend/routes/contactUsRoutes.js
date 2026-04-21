@@ -4,10 +4,21 @@ const ContactMessage = require("../models/ContactMessage");
 const { adminAuth } = require("../middleware/auth");
 const logger = require("../utils/logger");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS },
-});
+// Create transporter with validation
+const createTransporter = () => {
+  const user = process.env.MAIL_USER;
+  const pass = process.env.MAIL_PASS;
+  
+  if (!user || !pass) {
+    logger.error("MAIL_USER or MAIL_PASS not set in environment variables");
+    return null;
+  }
+  
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: { user, pass: pass.replace(/\s+/g, '') }, // strip any spaces from app password
+  });
+};
 
 const year = () => new Date().getFullYear();
 
@@ -177,6 +188,13 @@ router.post("/", async (req, res) => {
     // Save to DB
     await ContactMessage.create({ name: name.trim(), email: email.trim(), subject: subject?.trim() || '', message: message.trim() });
 
+    const transporter = createTransporter();
+    if (!transporter) {
+      logger.error("[contact-us] Email transporter could not be created — check MAIL_USER and MAIL_PASS env vars");
+      // Message was saved to DB, just skip email
+      return res.json({ success: true, message: "Your message has been sent successfully." });
+    }
+
     // 1. Notify admin
     await transporter.sendMail({
       from: `"Celestra Jewelry Contact" <${process.env.MAIL_USER}>`,
@@ -202,7 +220,7 @@ router.post("/", async (req, res) => {
 
     res.json({ success: true, message: "Your message has been sent successfully." });
   } catch (err) {
-    logger.error({ err }, "[contact-us] mail error");
+    logger.error({ err, code: err.code, command: err.command }, "[contact-us] error");
     res.status(500).json({ error: "Failed to send message. Please try again later." });
   }
 });
@@ -263,12 +281,15 @@ router.post("/reply", adminAuth, async (req, res) => {
   logger.debug({ email, htmlLength: htmlBody.length }, "[contact-us/reply] sending reply");
 
   try {
+    const transporter = createTransporter();
+    if (!transporter) {
+      return res.status(500).json({ error: "Email service is not configured. Please contact support." });
+    }
     await transporter.sendMail({
       from: `"Celestra Jewelry Support" <${process.env.MAIL_USER}>`,
       to: `"${(name || "Valued Customer").trim()}" <${email.trim()}>`,
       subject: subject?.trim() ? `Re: ${subject.trim()} – Celestra Jewelry` : "Reply from Celestra Jewelry Support",
       html: htmlBody,
-      // NOTE: no `text` fallback — html-only forces styled rendering
     });
 
     // Mark as replied in DB
