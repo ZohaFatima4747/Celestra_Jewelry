@@ -53,6 +53,7 @@ const SEO = ({
 
       {/* Twitter Card */}
       <meta name="twitter:card"        content="summary_large_image" />
+      <meta name="twitter:site"        content="@celestrajewelry" />
       <meta name="twitter:title"       content={fullTitle} />
       <meta name="twitter:description" content={metaDesc} />
       <meta name="twitter:image"       content={ogImage} />

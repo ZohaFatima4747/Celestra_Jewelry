@@ -47,7 +47,9 @@ function Shop() {
     "url": "https://celestraa.com",
     "logo": "https://celestraa.com/og-image.jpg",
     "description": "Premium handcrafted jewelry — rings, bracelets, earrings, chains and more. Free nationwide delivery across Pakistan.",
-    "sameAs": [],
+    "sameAs": [
+      "https://www.instagram.com/celestra.___?igsh=MXZvZ25oamR3N2UxMg=="
+    ],
   };
 
   return (

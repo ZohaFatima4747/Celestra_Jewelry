@@ -4,6 +4,7 @@ import "./Form.css";
 import logo from "../assets/logo.jpeg";
 import { AUTH_URL } from "../utils/api";
 import { mergeWishlistOnAuth } from "../utils/wishlist";
+import SEO from "./SEO";
 
 const BASE_URL = AUTH_URL;
 
@@ -151,6 +152,7 @@ const ContactForm = ({ onClose, setCartItems }) => {
 
   return (
     <div className="cf-card">
+      <SEO title="Sign In" noIndex={true} />
       {/* Close button */}
       {typeof onClose === "function" && (
         <button className="cf-close" onClick={onClose} aria-label="Close">✕</button>
