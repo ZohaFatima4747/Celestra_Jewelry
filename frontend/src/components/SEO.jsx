@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 
 const SITE_NAME  = "Celestra Jewelry";
-const SITE_URL   = import.meta.env.VITE_SITE_URL || "https://www.celestrajewelry.com";
+const SITE_URL   = import.meta.env.VITE_SITE_URL || "https://celestraa.com";
 const DEFAULT_OG = `${SITE_URL}/og-image.jpg`;
 
 /**

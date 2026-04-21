@@ -3,14 +3,14 @@
 
   <!-- Home / Shop -->
   <url>
-    <loc>https://www.celestrajewelry.com/</loc>
+    <loc>https://celestraa.com/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   <!-- Contact Us -->
   <url>
-    <loc>https://www.celestrajewelry.com/contact-us</loc>
+    <loc>https://celestraa.com/contact-us</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -21,7 +21,7 @@
     Example format for each product:
 
   <url>
-    <loc>https://www.celestrajewelry.com/product/{product._id}</loc>
+    <loc>https://celestraa.com/product/{product._id}</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

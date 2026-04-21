@@ -171,6 +171,7 @@ const CheckoutModal = ({ cartItems, totalAmount, onSuccess, onClose }) => {
     const userId = getUserId() || `guest_${Date.now()}`;
     const res = await fetch(`${ORDER_URL}/complete-payment`, {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId,

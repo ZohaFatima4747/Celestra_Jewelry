@@ -2,7 +2,7 @@
  * Centralised API base URLs.
  * Falls back to the production Heroku backend if the env var isn't set at build time.
  */
-export const BASE_URL  = import.meta.env.VITE_API_BASE_URL || "https://celestra-backend-56ab2d90c7be.herokuapp.com";
+export const BASE_URL  = import.meta.env.VITE_API_BASE_URL || "https://api.celestraa.com";
 export const API       = `${BASE_URL}/api`;
 export const AUTH_URL  = `${API}/v1/auth`;
 export const CART_URL  = `${API}/cart`;

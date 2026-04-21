@@ -11,4 +11,4 @@ Disallow: /ContactForm
 # Block API routes
 Disallow: /api/
 
-Sitemap: https://www.celestrajewelry.com/sitemap.xml
+Sitemap: https://celestraa.com/sitemap.xml

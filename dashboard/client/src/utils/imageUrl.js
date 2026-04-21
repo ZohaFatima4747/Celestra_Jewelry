@@ -12,7 +12,7 @@
 const BASE = (() => {
   const raw = import.meta.env.VITE_API_URL || '';
   const stripped = raw.replace(/\/api\/?$/, '');
-  return stripped || 'https://celestra-backend-56ab2d90c7be.herokuapp.com';
+  return stripped || 'https://api.celestraa.com';
 })();
 
 export function resolveImage(url, size = 'full') {

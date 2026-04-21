@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-const BASE = import.meta.env.VITE_API_URL || 'https://celestra-backend-56ab2d90c7be.herokuapp.com/api';
+const BASE = import.meta.env.VITE_API_URL || 'https://api.celestraa.com/api';
 
-const api = axios.create({ baseURL: BASE });
+const api = axios.create({ baseURL: BASE, withCredentials: true });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('dashToken');

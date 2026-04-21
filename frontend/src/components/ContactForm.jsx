@@ -13,6 +13,7 @@ export const refreshAccessToken = async () => {
   try {
     const res = await fetch(`${BASE_URL}/refresh`, {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
     });
@@ -90,6 +91,7 @@ const ContactForm = ({ onClose, setCartItems }) => {
 
       const res  = await fetch(url, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });

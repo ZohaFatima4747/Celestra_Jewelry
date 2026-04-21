@@ -44,8 +44,8 @@ function Shop() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Celestra Jewelry",
-    "url": "https://www.celestrajewelry.com",
-    "logo": "https://www.celestrajewelry.com/og-image.jpg",
+    "url": "https://celestraa.com",
+    "logo": "https://celestraa.com/og-image.jpg",
     "description": "Premium handcrafted jewelry — rings, bracelets, earrings, chains and more. Free nationwide delivery across Pakistan.",
     "sameAs": [],
   };

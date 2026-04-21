@@ -109,7 +109,7 @@ ADMIN_PASSWORD=<strong-password>
 
 ```env
 VITE_API_BASE_URL=        # leave empty for Vite proxy in dev
-VITE_SITE_URL=https://www.celestrajewelry.com
+VITE_SITE_URL=https://celestraa.com
 ```
 
 **`dashboard/client/.env`**

@@ -12,7 +12,7 @@
 // env var is missing at build time (e.g. Vercel deployment without VITE_API_BASE_URL set).
 const BASE =
   import.meta.env.VITE_API_BASE_URL ||
-  'https://celestra-backend-56ab2d90c7be.herokuapp.com';
+  'https://api.celestraa.com';
 
 export function resolveImage(filename, size = 'full') {
   if (!filename) return '';
