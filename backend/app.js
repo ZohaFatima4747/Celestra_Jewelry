@@ -24,6 +24,10 @@ const contactUsRoutes = require("./routes/contactUsRoutes");
 
 const app = express();
 
+// ── Trust reverse proxy (Heroku / Render / Railway) ──────────────────────────
+// Required so req.secure works and secure cookies are set correctly over HTTPS
+app.set("trust proxy", 1);
+
 // ── Security headers (helmet) ─────────────────────────────────────────────────
 app.use(helmet({
   // Allow inline styles/scripts needed by the React SPA
@@ -35,19 +39,33 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
   : [];
 
-// Vercel preview deployments use dynamic URLs — allow any *.vercel.app subdomain
-// that starts with "celestra-" so preview deploys work without touching env vars.
+// Vercel preview deployments — allow any celestra-* subdomain without touching env vars
 const VERCEL_PREVIEW_RE = /^https:\/\/celestra-[a-z0-9-]+\.vercel\.app$/i;
+
+const isProduction = process.env.NODE_ENV === "production";
 
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin) return cb(null, true); // server-to-server
+    if (!origin) return cb(null, true); // server-to-server / curl
     if (allowedOrigins.includes(origin)) return cb(null, true);
     if (VERCEL_PREVIEW_RE.test(origin)) return cb(null, true);
     cb(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
 }));
+
+// ── Cookie helper — attach to res so any route can call res.secureCookie() ────
+app.use((_req, res, next) => {
+  res.secureCookie = (name, value, opts = {}) => {
+    res.cookie(name, value, {
+      httpOnly: true,
+      secure: isProduction,          // HTTPS-only in production
+      sameSite: isProduction ? "none" : "lax",
+      ...opts,
+    });
+  };
+  next();
+});
 
 // ── Request logging ───────────────────────────────────────────────────────────
 app.use(pinoHttp({ logger, autoLogging: process.env.NODE_ENV === "production" }));
