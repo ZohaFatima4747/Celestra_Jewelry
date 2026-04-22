@@ -9,6 +9,8 @@ const logger = require("../utils/logger");
 const sendOrderShipped   = require("../utils/sendOrderShipped");
 const sendOrderDelivered = require("../utils/sendOrderDelivered");
 const sendOrderCancelled = require("../utils/sendOrderCancelled");
+const upload = require("../middleware/upload");
+const uploadToCloudinary = require("../utils/uploadToCloudinary");
 
 // ── STATS (aggregation — no full collection fetch) ────────────────────────────
 // GET /api/admin/stats
@@ -304,13 +306,36 @@ router.get("/products", adminAuth, async (req, res) => {
 });
 
 // POST /api/admin/products
-router.post("/products", adminAuth, async (req, res) => {
+// Accepts either:
+//   - multipart/form-data with "images" file field (uploaded directly to Cloudinary)
+//   - application/json with "images" array of pre-uploaded Cloudinary URLs
+router.post("/products", adminAuth, upload.array("images", 10), async (req, res) => {
   try {
-    const { name, price, stock, category, images } = req.body;
-    if (!name?.trim())                                    return res.status(400).json({ message: "Product name is required" });
-    if (price === undefined || isNaN(Number(price)))      return res.status(400).json({ message: "Valid price is required" });
-    if (!category?.trim())                                return res.status(400).json({ message: "Category is required" });
-    if (!Array.isArray(images) || images.length === 0)    return res.status(400).json({ message: "At least one image is required" });
+    const { name, price, stock, category } = req.body;
+    if (!name?.trim())                               return res.status(400).json({ message: "Product name is required" });
+    if (price === undefined || isNaN(Number(price))) return res.status(400).json({ message: "Valid price is required" });
+    if (!category?.trim())                           return res.status(400).json({ message: "Category is required" });
+
+    let images = [];
+
+    // Case 1: files uploaded via multipart — push to Cloudinary
+    if (req.files && req.files.length > 0) {
+      try {
+        images = await Promise.all(
+          req.files.map((file) => uploadToCloudinary(file.buffer))
+        );
+      } catch (uploadErr) {
+        logger.error({ err: uploadErr }, "Cloudinary upload failed during product creation");
+        return res.status(502).json({ message: "Image upload failed. Product was not created." });
+      }
+    } else {
+      // Case 2: JSON body with pre-uploaded URLs
+      const bodyImages = req.body.images;
+      images = Array.isArray(bodyImages) ? bodyImages : (bodyImages ? [bodyImages] : []);
+    }
+
+    if (images.length === 0)
+      return res.status(400).json({ message: "At least one image is required" });
 
     const product = new Product({
       ...req.body,
@@ -318,6 +343,7 @@ router.post("/products", adminAuth, async (req, res) => {
       category: category.trim().toLowerCase(),
       price:    Number(price),
       stock:    Number(stock || 0),
+      images,
     });
     await product.save();
     res.status(201).json({ success: true, product });
@@ -328,12 +354,25 @@ router.post("/products", adminAuth, async (req, res) => {
 });
 
 // PUT /api/admin/products/:productId
-router.put("/products/:productId", adminAuth, async (req, res) => {
+router.put("/products/:productId", adminAuth, upload.array("images", 10), async (req, res) => {
   try {
     const updates = { ...req.body };
     if (updates.category)          updates.category = updates.category.trim().toLowerCase();
     if (updates.price !== undefined) updates.price   = Number(updates.price);
     if (updates.stock !== undefined) updates.stock   = Number(updates.stock);
+
+    // Handle new image uploads
+    if (req.files && req.files.length > 0) {
+      try {
+        const newImages = await Promise.all(
+          req.files.map((file) => uploadToCloudinary(file.buffer))
+        );
+        updates.images = newImages;
+      } catch (uploadErr) {
+        logger.error({ err: uploadErr }, "Cloudinary upload failed during product update");
+        return res.status(502).json({ message: "Image upload failed. Product was not updated." });
+      }
+    }
 
     const product = await Product.findByIdAndUpdate(
       req.params.productId,

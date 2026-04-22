@@ -87,13 +87,6 @@ const corpCrossOrigin = (_req, res, next) => {
   next();
 };
 
-// Uploaded product images — content-addressed by timestamp prefix, safe to cache 30 days
-app.use("/uploads", corpCrossOrigin, express.static(path.join(__dirname, "uploads"), {
-  maxAge: "30d",
-  immutable: false,
-  etag: true,
-  lastModified: true,
-}));
 // Legacy product images — explicit handler so filenames with spaces, &, and
 // other special characters are decoded correctly before hitting the filesystem.
 app.get("/product-images/*filename", corpCrossOrigin, (req, res) => {
