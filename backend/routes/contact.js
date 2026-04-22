@@ -96,7 +96,7 @@ router.post("/signup", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: user._id, name: user.name, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -122,12 +122,12 @@ router.post("/login", async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: user._id, name: user.name, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
     const refreshToken = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: user._id, name: user.name, email: user.email, role: user.role },
       process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
       { expiresIn: "30d" }
     );
@@ -154,7 +154,7 @@ router.post("/refresh", async (req, res) => {
     if (!record) return res.status(403).json({ message: "Invalid refresh token" });
 
     const newToken = jwt.sign(
-      { id: decoded.id, email: decoded.email, role: decoded.role },
+      { id: decoded.id, name: decoded.name, email: decoded.email, role: decoded.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
