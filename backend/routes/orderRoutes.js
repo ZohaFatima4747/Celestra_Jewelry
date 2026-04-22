@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Cart = require("../models/Cart");
 const Order = require("../models/Order");
+const Product = require("../models/Product");
 const Contact = require("../models/contact");
 const Message = require("../models/Message");
 const { orderLimiter } = require("../middleware/security");
@@ -81,6 +82,42 @@ router.post("/complete-payment", orderLimiter, async (req, res) => {
       return res.status(400).json({ error: "Cart is empty" });
     }
 
+    // ── Stock validation & atomic decrement ──────────────────────────────────
+    // Collect all productIds that are real ObjectIds (guest carts may have
+    // string IDs that don't exist in the DB — skip those gracefully).
+    const stockDeducted = []; // track what we decremented so we can roll back
+
+    for (const item of cartItems) {
+      const pid = item.product._id;
+      if (!pid || !/^[a-f\d]{24}$/i.test(String(pid))) continue;
+
+      // Atomically decrement only if stock is sufficient.
+      // $inc with a negative value + $gte condition prevents going below 0.
+      const updated = await Product.findOneAndUpdate(
+        { _id: pid, stock: { $gte: item.qty } },
+        { $inc: { stock: -item.qty } },
+        { new: false } // return original doc so we can log the before-value
+      );
+
+      if (!updated) {
+        // Either product not found or stock was insufficient — roll back any
+        // decrements already applied in this loop iteration.
+        for (const { productId, qty } of stockDeducted) {
+          await Product.findByIdAndUpdate(productId, { $inc: { stock: qty } });
+        }
+
+        // Fetch the product name for a helpful error message
+        const prod = await Product.findById(pid).select("name stock").lean();
+        const label = prod?.name || String(pid);
+        return res.status(409).json({
+          error: `Insufficient stock for product: ${label}`,
+        });
+      }
+
+      stockDeducted.push({ productId: pid, qty: item.qty });
+    }
+
+    // ── Create order (stock already reserved above) ───────────────────────────
     const order = new Order({
       sessionId: userId,
       items: cartItems.map((item) => ({
@@ -96,7 +133,15 @@ router.post("/complete-payment", orderLimiter, async (req, res) => {
       customer,
     });
 
-    await order.save();
+    try {
+      await order.save();
+    } catch (saveErr) {
+      // Order failed to persist — roll back every stock decrement
+      for (const { productId, qty } of stockDeducted) {
+        await Product.findByIdAndUpdate(productId, { $inc: { stock: qty } });
+      }
+      throw saveErr; // re-throw so the outer catch returns 500
+    }
 
     // Send order confirmation email to customer (non-blocking)
     sendOrderConfirmation(order).catch((err) =>

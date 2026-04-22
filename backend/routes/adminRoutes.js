@@ -131,6 +131,31 @@ router.post("/orders/manual", adminAuth, async (req, res) => {
     const allowedStatuses = ["pending COD", "shipped", "delivered", "cancelled", "completed"];
     const orderStatus = allowedStatuses.includes(status) ? status : "completed";
 
+    // ── Stock validation & atomic decrement (items with a known productId) ────
+    const stockDeducted = [];
+
+    for (const item of parsedItems) {
+      if (!item.productId || !/^[a-f\d]{24}$/i.test(String(item.productId))) continue;
+
+      const updated = await Product.findOneAndUpdate(
+        { _id: item.productId, stock: { $gte: item.qty } },
+        { $inc: { stock: -item.qty } },
+        { new: false }
+      );
+
+      if (!updated) {
+        // Roll back any decrements already applied
+        for (const { productId, qty } of stockDeducted) {
+          await Product.findByIdAndUpdate(productId, { $inc: { stock: qty } });
+        }
+        const prod = await Product.findById(item.productId).select("name stock").lean();
+        const label = prod?.name || String(item.productId);
+        return res.status(409).json({ message: `Insufficient stock for product: ${label}` });
+      }
+
+      stockDeducted.push({ productId: item.productId, qty: item.qty });
+    }
+
     const order = new Order({
       orderType: "manual",
       sessionId: "manual",
@@ -149,7 +174,15 @@ router.post("/orders/manual", adminAuth, async (req, res) => {
       },
     });
 
-    await order.save();
+    try {
+      await order.save();
+    } catch (saveErr) {
+      // Roll back stock decrements if order fails to persist
+      for (const { productId, qty } of stockDeducted) {
+        await Product.findByIdAndUpdate(productId, { $inc: { stock: qty } });
+      }
+      throw saveErr;
+    }
 
     // Admin notification
     try {
