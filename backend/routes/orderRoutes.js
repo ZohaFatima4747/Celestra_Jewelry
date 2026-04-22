@@ -254,11 +254,28 @@ router.put("/:orderId/status", authMiddleware, async (req, res) => {
     if (order.status !== "pending COD")
       return res.status(400).json({ error: "Only pending orders can be cancelled." });
 
+    // ── Restore stock before marking cancelled ────────────────────────────────
+    // Guard: order.status !== "cancelled" is already enforced above, so no
+    // double-restoration is possible through this endpoint.
+    for (const item of order.items) {
+      if (!item.productId || !/^[a-f\d]{24}$/i.test(String(item.productId))) continue;
+      await Product.findOneAndUpdate(
+        { _id: item.productId },
+        { $inc: { stock: item.qty } }
+      );
+      logger.info(
+        { productId: item.productId, qty: item.qty, orderId: order._id },
+        "[STOCK] Restored on user cancellation"
+      );
+    }
+
     const updated = await Order.findByIdAndUpdate(
       req.params.orderId,
       { status: "cancelled" },
       { new: true }
     );
+
+    logger.info({ orderId: order._id }, "[ORDER] Cancelled by user — stock restored");
 
     try {
       await Message.create({

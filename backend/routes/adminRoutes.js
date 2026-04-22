@@ -234,12 +234,34 @@ router.put("/orders/:orderId", adminAuth, async (req, res) => {
     return res.status(400).json({ message: "Invalid status" });
 
   try {
-    const order = await Order.findByIdAndUpdate(
+    // Fetch the order BEFORE updating so we can check the old status
+    const order = await Order.findById(req.params.orderId);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    const oldStatus = order.status;
+
+    // ── Restore stock if transitioning TO "cancelled" (and wasn't already) ────
+    if (status === "cancelled" && oldStatus !== "cancelled") {
+      for (const item of order.items) {
+        if (!item.productId || !/^[a-f\d]{24}$/i.test(String(item.productId))) continue;
+        await Product.findOneAndUpdate(
+          { _id: item.productId },
+          { $inc: { stock: item.qty } }
+        );
+        logger.info(
+          { productId: item.productId, qty: item.qty, orderId: order._id },
+          "[STOCK] Restored on admin cancellation"
+        );
+      }
+      logger.info({ orderId: order._id, oldStatus }, "[ORDER] Cancelled by admin — stock restored");
+    }
+
+    // Now update the order status
+    const updated = await Order.findByIdAndUpdate(
       req.params.orderId,
       { status },
       { new: true }
     );
-    if (!order) return res.status(404).json({ message: "Order not found" });
 
     if (status === "delivered") {
       const shortId = `#${String(order._id).slice(-8).toUpperCase()}`;
@@ -279,7 +301,7 @@ router.put("/orders/:orderId", adminAuth, async (req, res) => {
       );
     }
 
-    res.json({ success: true, order });
+    res.json({ success: true, order: updated });
   } catch (err) {
     logger.error({ err }, "PUT /admin/orders/:id failed");
     res.status(500).json({ message: "Server error" });
