@@ -246,10 +246,21 @@ router.put("/:orderId/status", authMiddleware, async (req, res) => {
     const order = await Order.findById(req.params.orderId);
     if (!order) return res.status(404).json({ error: "Order not found" });
 
-    // Ensure the requesting user owns this order.
-    // Compare as strings — sessionId is stored as a string, req.user.id may be
-    // an ObjectId or string depending on JWT serialisation.
-    if (String(order.sessionId) !== String(req.user.id) && req.user.role !== "admin") {
+    // ── Ownership check ───────────────────────────────────────────────────────
+    // Allow if: admin, OR sessionId matches, OR customer email matches the
+    // authenticated user's email (covers orders placed as guest then logged in).
+    const isAdmin = req.user.role === "admin";
+    const sessionMatch = String(order.sessionId) === String(req.user.id);
+    const emailMatch =
+      req.user.email &&
+      order.customer?.email &&
+      order.customer.email.toLowerCase() === req.user.email.toLowerCase();
+
+    if (!isAdmin && !sessionMatch && !emailMatch) {
+      logger.warn(
+        { orderId: order._id, sessionId: order.sessionId, userId: req.user.id, userEmail: req.user.email },
+        "[AUTH] Cancel ownership check failed"
+      );
       return res.status(403).json({ error: "Forbidden" });
     }
 
