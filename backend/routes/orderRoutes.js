@@ -7,8 +7,9 @@ const Message = require("../models/Message");
 const { orderLimiter } = require("../middleware/security");
 const { authMiddleware } = require("../middleware/auth");
 const logger = require("../utils/logger");
-const sendOrderConfirmation = require("../utils/sendOrderConfirmation");
-const sendOrderCancelled    = require("../utils/sendOrderCancelled");
+const sendOrderConfirmation        = require("../utils/sendOrderConfirmation");
+const sendOrderCancelled           = require("../utils/sendOrderCancelled");
+const sendAdminOrderNotification   = require("../utils/sendAdminOrderNotification");
 
 // ── Pakistan location data (mirrors frontend) ─────────────────────────────────
 const PAKISTAN_LOCATIONS = {
@@ -97,9 +98,14 @@ router.post("/complete-payment", orderLimiter, async (req, res) => {
 
     await order.save();
 
-    // Send order confirmation email (non-blocking)
+    // Send order confirmation email to customer (non-blocking)
     sendOrderConfirmation(order).catch((err) =>
       logger.warn({ err }, "[EMAIL] Order confirmation failed")
+    );
+
+    // Notify admin of new order (non-blocking — must not affect order placement)
+    sendAdminOrderNotification(order).catch((err) =>
+      logger.warn({ err }, "[EMAIL] Admin order notification failed")
     );
 
     // Save guest contact if applicable
