@@ -246,8 +246,10 @@ router.put("/:orderId/status", authMiddleware, async (req, res) => {
     const order = await Order.findById(req.params.orderId);
     if (!order) return res.status(404).json({ error: "Order not found" });
 
-    // Ensure the requesting user owns this order
-    if (order.sessionId !== req.user.id && req.user.role !== "admin") {
+    // Ensure the requesting user owns this order.
+    // Compare as strings — sessionId is stored as a string, req.user.id may be
+    // an ObjectId or string depending on JWT serialisation.
+    if (String(order.sessionId) !== String(req.user.id) && req.user.role !== "admin") {
       return res.status(403).json({ error: "Forbidden" });
     }
 
